@@ -155,6 +155,15 @@ export default function ZborcheGame() {
     };
   }, [length]);
 
+  // Catch-up sync: a game that finished before the leaderboard shipped — or
+  // while logged out, then signed in — never reached the server. Whenever a
+  // finished puzzle is present, push it once. Idempotent (upsert on the day's
+  // primary key) and a no-op when logged out, so it's safe to fire on restore.
+  useEffect(() => {
+    if (!puzzle || status === "playing") return;
+    void syncResult(puzzle.date, status === "won", guesses.length);
+  }, [puzzle, status, guesses.length]);
+
   const message = useCallback((m: string) => {
     setFlash(m);
     window.setTimeout(() => setFlash((v) => (v === m ? null : v)), 1600);
