@@ -24,7 +24,7 @@ jobs:
         run: |
           code=$(curl -sS -o /tmp/out.txt -w "%{http_code}" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://mojprilep.mk/api/cron/event-reminders)
+            https://www.mojprilep.mk/api/cron/event-reminders)
           echo "HTTP $code"
           cat /tmp/out.txt
           echo

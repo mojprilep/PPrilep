@@ -30,6 +30,7 @@ export const THREE_COLUMN_ROUTES: readonly string[] = [
   "/bus-station",         // Автобуска станица
   "/recycle",             // Рециклирање
   "/kino",                // Кино анкета
+  "/zborche",             // ЗборЧе (игра)
   "/sport",               // Спорт и Рекреација
   "/privacy",          // Политика на приватност
   "/terms",            // Услови за користење

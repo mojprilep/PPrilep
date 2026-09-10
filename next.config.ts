@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.1.119", "localhost"],
+  // The ЗборЧе dictionary route reads its per-length wordlists from disk at
+  // runtime (they're too big to import as JSON without exploding tsc). The path
+  // is computed from ?len, so tracing can't see it — include the folder here so
+  // the files ship in the serverless bundle on Vercel.
+  outputFileTracingIncludes: {
+    "/api/zborche/validate": ["./lib/zborche/words/**/*"],
+  },
   // Pretty, search-friendly URL for the live bus map. /prevoz transparently
   // serves the transport utility page (URL stays /prevoz). The page sets its
   // canonical to /prevoz so the old /utility/transport path isn't indexed twice.

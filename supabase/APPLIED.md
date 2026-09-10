@@ -50,6 +50,7 @@ script not listed separately came back OK on that run.
 | `add_sport_club_owners.sql` | ❓ unverified | Adds `profiles.club_id` + `current_user_club()` / `user_owns_club()`. Needed before a club can edit its own profile or post news. Not yet run. |
 | `pause_issue_reporting.sql` | ✅ applied | **Intentionally active.** Reporting is paused. |
 | `restore_issue_reporting.sql` | ⛔ not applied | Deliberate — do not run until reporting is being re-enabled. Pair it with `REPORTING_ENABLED` in `components/ui/ActionModal.tsx`. |
+| `add_zborche_leaderboard.sql` | ❓ not yet run | Creates `zborche_results` (one row per player per day, insert-only) + the public `zborche_leaderboard()` function for the ЗборЧе cross-user scoreboard. Run to enable the leaderboard. |
 
 ## Not in this folder
 

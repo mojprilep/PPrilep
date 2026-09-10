@@ -1,20 +1,20 @@
 "use client";
 
-import PromiseTracker from "../ui/PromiseTracker";
+import ZborcheCard from "../zborche/ZborcheCard";
 import EventSpotlight from "../ui/EventSpotlight";
 import PublicSponsorPanel from "../ui/PublicSponsorPanel";
 import MobileAppPanel from "../app/MobileAppPanel";
 
 /**
  * Default right panel for routes without a custom one (home, issues, heroes,
- * communities): the local-government promise tracker, the featured/next city
- * event, then the real sponsors panel (current partners + apply button).
+ * communities): the ЗборЧе daily-game teaser, the featured/next city event,
+ * then the real sponsors panel (current partners + apply button).
  */
 export default function RightPanel() {
   return (
     <aside className="flex h-auto flex-col gap-3 overflow-y-auto bg-transparent text-sm lg:gap-0 xl:text-base">
       <MobileAppPanel />
-      <PromiseTracker />
+      <ZborcheCard />
       <EventSpotlight />
       <PublicSponsorPanel />
 

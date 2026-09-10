@@ -60,6 +60,19 @@ export const structure: StructureResolver = (S) =>
 
       S.divider(),
 
+      // ── 🟩 ЗборЧе (daily word game) ──────────────────────────────────
+      // Puzzles are authored only here; the app reads today's word through
+      // /api/zborche. Schedule words ahead by date — length drives difficulty.
+      S.listItem()
+        .title("🟩 ЗборЧе")
+        .child(
+          S.documentTypeList("zborche")
+            .title("ЗборЧе — зборови")
+            .defaultOrdering([{ field: "date", direction: "desc" }]),
+        ),
+
+      S.divider(),
+
       // ── ✨ Позитива (blog) ────────────────────────────────────────────
       S.listItem()
         .title("✨ Позитива")

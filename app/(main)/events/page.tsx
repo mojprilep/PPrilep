@@ -3,6 +3,10 @@ import EventsExplorer from "../../../components/events/EventsExplorer";
 import SubmitEventButton from "../../../components/events/SubmitEventButton";
 import MoviePollCard from "../../../components/kino/MoviePollCard";
 
+// The Кино анкета teaser (and the events list) are server-fetched from Sanity.
+// Revalidate so a newly published poll or event appears without a redeploy.
+export const revalidate = 300;
+
 export default async function EventsPage() {
   const events = await fetchCityEvents();
 
