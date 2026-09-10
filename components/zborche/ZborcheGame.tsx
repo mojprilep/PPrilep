@@ -25,6 +25,7 @@ import {
 import ZborcheLogo from "./ZborcheLogo";
 import { loadDictionary } from "../../lib/zborche/dictionary";
 import { recordResult } from "../../lib/zborche/stats";
+import { syncResult } from "../../lib/zborche/leaderboard";
 
 type Puzzle = { date: string; word: string; hint: string | null; length: number };
 type Status = "playing" | "won" | "lost";
@@ -189,6 +190,9 @@ export default function ZborcheGame() {
       // Fold the finished game into the on-device scoreboard (idempotent per
       // day); the right-column stats panel refreshes off its event.
       recordResult(puzzle.date, nextStatus === "won", nextGuesses.length);
+      // And, for a signed-in player, onto the server so it counts on the public
+      // leaderboard. No-op when logged out; best-effort, never blocks the game.
+      void syncResult(puzzle.date, nextStatus === "won", nextGuesses.length);
     }
     if (nextStatus === "won") {
       message("Браво! 🎉");

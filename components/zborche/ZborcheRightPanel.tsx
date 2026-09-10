@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from "react";
 import ZborcheLogo from "./ZborcheLogo";
+import ZborcheLeaderboard from "./ZborcheLeaderboard";
 import { loadStats, winPct, STATS_EVENT, type Stats } from "../../lib/zborche/stats";
 
 export default function ZborcheRightPanel() {
@@ -56,6 +57,8 @@ export default function ZborcheRightPanel() {
           </>
         )}
       </section>
+
+      <ZborcheLeaderboard />
     </div>
   );
 }
