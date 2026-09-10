@@ -358,7 +358,7 @@ export default function ZborcheGame() {
 
       {/* Board */}
       <div
-        className={`mx-auto grid w-fit gap-1.5 ${shake ? "animate-[shake_0.4s]" : ""}`}
+        className={`mx-auto grid w-full max-w-[22rem] gap-1.5 ${shake ? "animate-[shake_0.4s]" : ""}`}
         style={{ gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: rows }).map((_, r) => {
@@ -382,7 +382,7 @@ export default function ZborcheGame() {
                 return (
                   <div
                     key={i}
-                    className={`flex h-12 w-12 items-center justify-center rounded-md border-2 text-xl font-extrabold uppercase sm:h-14 sm:w-14 sm:text-2xl ${
+                    className={`flex aspect-square w-full items-center justify-center rounded-md border-2 text-[clamp(1rem,7vw,1.6rem)] font-extrabold uppercase ${
                       isReveal ? "zb-flip" : isPopped ? "zb-pop" : ""
                     } ${
                       state
@@ -524,7 +524,7 @@ function Keyboard({
   onBackspace: () => void;
 }) {
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-1.5">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-1.5">
       {MK_ROWS.map((row, ri) => (
         <div key={ri} className="flex justify-center gap-1">
           {ri === MK_ROWS.length - 1 && (
@@ -532,7 +532,7 @@ function Keyboard({
               type="button"
               onClick={onEnter}
               aria-label="Потврди"
-              className="flex h-11 min-w-[4rem] items-center justify-center gap-1 rounded-md bg-[#2aa99d] px-3 text-xs font-bold uppercase text-white hover:bg-[#248f85]"
+              className="flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-[#2aa99d] px-2.5 text-xs font-bold uppercase text-white hover:bg-[#248f85]"
             >
               <CornerDownLeft size={18} />
             </button>
@@ -544,7 +544,7 @@ function Keyboard({
                 key={ch}
                 type="button"
                 onClick={() => onType(ch)}
-                className={`h-11 min-w-[1.75rem] flex-1 rounded-md text-sm font-bold uppercase transition-colors sm:min-w-[2rem] ${
+                className={`h-11 min-w-0 flex-1 basis-0 rounded-md text-sm font-bold uppercase transition-colors ${
                   state ? KEY_BG[state] : "bg-zinc-200 text-zinc-800 hover:bg-zinc-300"
                 }`}
               >
@@ -557,7 +557,7 @@ function Keyboard({
               type="button"
               onClick={onBackspace}
               aria-label="Избриши"
-              className="flex h-11 items-center justify-center rounded-md bg-zinc-200 px-2.5 text-zinc-700 hover:bg-zinc-300"
+              className="flex h-11 shrink-0 items-center justify-center rounded-md bg-zinc-200 px-2.5 text-zinc-700 hover:bg-zinc-300"
             >
               <Delete size={16} />
             </button>

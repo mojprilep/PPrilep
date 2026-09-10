@@ -6,13 +6,11 @@ import { X } from "lucide-react";
 import { detectPlatform, type MobilePlatform } from "../../lib/config/appStores";
 
 const DISMISS_KEY = "install-banner-collapsed";
-// Width of the green handle left peeking when the banner is collapsed (px).
-const HANDLE_PX = 14;
 
 /**
- * Mobile-only install prompt anchored to the LEFT edge. It slides in softly as
- * a full-width bar. The X doesn't remove it — it slides back to the edge,
- * leaving a wide green handle (the brand green) that slides it open again.
+ * Mobile-only install prompt anchored to the BOTTOM. It slides up softly as a
+ * floating card. The X dismisses it for the session — it slides all the way
+ * down and out, leaving nothing behind (no handle, no border).
  */
 export default function InstallAppBanner() {
   const [platform, setPlatform] = useState<MobilePlatform>("other");
@@ -50,14 +48,17 @@ export default function InstallAppBanner() {
   }
 
   return (
-    <div className="fixed inset-x-0 top-[80%] z-[60] -translate-y-1/2 lg:hidden">
+    <div
+      className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] lg:hidden"
+      style={{ pointerEvents: open ? "auto" : "none" }}>
       <div
-        className="flex items-stretch transition-transform duration-500 ease-out will-change-transform"
+        className="transition-all duration-500 ease-out will-change-transform"
         style={{
-          transform: open ? "translateX(0)" : `translateX(calc(-100% + ${HANDLE_PX}px))`,
+          transform: open ? "translateY(0)" : "translateY(calc(100% + 24px))",
+          opacity: open ? 1 : 0,
         }}>
-        {/* Full-width card */}
-        <div className="flex-1 border-y border-theme bg-theme-surface px-4 py-4 shadow-xl">
+        {/* Floating card */}
+        <div className="rounded-2xl bg-theme-surface px-4 py-4 shadow-xl">
           <div className="flex items-center gap-3">
             <Image
               src="/logo/app-icon-192.png"
@@ -81,18 +82,6 @@ export default function InstallAppBanner() {
             </button>
           </div>
         </div>
-
-        {/* Green handle — the only part visible once collapsed. Hidden while
-            open. Wide enough to be an easy tap target. */}
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Отвори"
-          style={{ width: open ? 0 : HANDLE_PX }}
-          className={`shrink-0 cursor-pointer rounded-r-xl bg-primary shadow-md transition-opacity duration-300 ${
-            open ? "pointer-events-none opacity-0" : "opacity-100"
-          }`}
-        />
       </div>
     </div>
   );

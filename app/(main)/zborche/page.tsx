@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 // page is a thin static shell — no revalidate needed here.
 export default function ZborchePage() {
   return (
-    <div className="mx-auto max-w-lg py-2">
+    <div className="mx-auto w-full max-w-lg overflow-x-hidden px-3 py-2">
       <ZborcheGame />
     </div>
   );
