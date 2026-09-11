@@ -11,7 +11,7 @@
  */
 
 import { createClient } from "../supabase/client";
-import { STATS_EVENT } from "./stats";
+import { STATS_EVENT, emptyStats, type Stats } from "./stats";
 
 export type LeaderRow = {
   user_id: string;
@@ -102,6 +102,50 @@ export async function fetchTodayResult(date: string): Promise<TodayResult | null
       attempts: data.attempts ?? null,
       guesses: (data.guesses as string[] | null) ?? null,
     };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The signed-in player's own scoreboard, derived from every one of their
+ * `zborche_results` rows — so the stats card (played / win% / streaks /
+ * distribution) is the same on every device instead of per-browser localStorage.
+ * Null when logged out or on any error, so the caller can fall back to local.
+ *
+ * Folds the rows in date order with the same rules as the local recorder
+ * (see lib/zborche/stats.recordResult): each day counts once, a win extends the
+ * streak and lands in the distribution, a loss breaks the streak.
+ */
+export async function fetchMyStats(): Promise<Stats | null> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from("zborche_results")
+      .select("puzzle_date, won, attempts")
+      .eq("user_id", user.id)
+      .order("puzzle_date", { ascending: true });
+    if (error || !data) return null;
+
+    const s = emptyStats();
+    for (const r of data as { puzzle_date: string; won: boolean; attempts: number | null }[]) {
+      s.recorded[r.puzzle_date] = true;
+      s.played += 1;
+      if (r.won) {
+        s.wins += 1;
+        s.curStreak += 1;
+        if (s.curStreak > s.maxStreak) s.maxStreak = s.curStreak;
+        if (r.attempts != null) s.dist[r.attempts] = (s.dist[r.attempts] ?? 0) + 1;
+      } else {
+        s.curStreak = 0;
+      }
+    }
+    return s;
   } catch {
     return null;
   }

@@ -14,20 +14,34 @@ import { useEffect, useState } from "react";
 import ZborcheLogo from "./ZborcheLogo";
 import ZborcheLeaderboard from "./ZborcheLeaderboard";
 import { loadStats, winPct, STATS_EVENT, type Stats } from "../../lib/zborche/stats";
+import { fetchMyStats } from "../../lib/zborche/leaderboard";
 
 export default function ZborcheRightPanel() {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
-    const read = () => setStats(loadStats());
-    read();
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === "zborche:stats") read();
+    let alive = true;
+    const applyLocal = () => {
+      if (alive) setStats(loadStats());
     };
-    window.addEventListener(STATS_EVENT, read);
+    // Show local instantly, then override with the server-derived scoreboard for
+    // a signed-in player so the card matches every device. Server null (logged
+    // out / error) or empty → keep local.
+    const refresh = () => {
+      applyLocal();
+      fetchMyStats().then((s) => {
+        if (alive && s && s.played > 0) setStats(s);
+      });
+    };
+    refresh();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "zborche:stats") applyLocal();
+    };
+    window.addEventListener(STATS_EVENT, refresh);
     window.addEventListener("storage", onStorage);
     return () => {
-      window.removeEventListener(STATS_EVENT, read);
+      alive = false;
+      window.removeEventListener(STATS_EVENT, refresh);
       window.removeEventListener("storage", onStorage);
     };
   }, []);
