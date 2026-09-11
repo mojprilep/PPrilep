@@ -25,15 +25,31 @@ export type LeaderRow = {
   last_played: string | null;
 };
 
+/** One player's own finished board for a given day, read back from the server. */
+export type TodayResult = {
+  won: boolean;
+  attempts: number | null;
+  /** The guesses played, when the row was written with them; null for rows
+   *  saved before the board was stored server-side. */
+  guesses: string[] | null;
+};
+
 /**
  * Record one finished game on the server for the signed-in player. No-op for
  * logged-out players. Idempotent: the table's primary key is (user_id, date)
  * and there is no UPDATE policy, so a day's result is frozen once written —
  * `ignoreDuplicates` turns a replay into a silent no-op instead of an error.
- * Best-effort: any failure is swallowed, the local game is never affected. On a
- * successful write it re-fires STATS_EVENT so a mounted board refreshes.
+ * The finished `guesses` are stored too, so the exact board can be restored on
+ * any device (see fetchTodayResult). Best-effort: any failure is swallowed, the
+ * local game is never affected. On a successful write it re-fires STATS_EVENT so
+ * a mounted board refreshes.
  */
-export async function syncResult(date: string, won: boolean, attempts: number): Promise<void> {
+export async function syncResult(
+  date: string,
+  won: boolean,
+  attempts: number,
+  guesses: string[],
+): Promise<void> {
   try {
     const supabase = createClient();
     const {
@@ -47,6 +63,7 @@ export async function syncResult(date: string, won: boolean, attempts: number): 
         puzzle_date: date,
         won,
         attempts: won ? attempts : null,
+        guesses,
       },
       { onConflict: "user_id,puzzle_date", ignoreDuplicates: true },
     );
@@ -56,6 +73,37 @@ export async function syncResult(date: string, won: boolean, attempts: number): 
     }
   } catch {
     // Leaderboard sync is best-effort — the local game and stats are unaffected.
+  }
+}
+
+/**
+ * The signed-in player's own result for one day, or null (logged out, no row,
+ * or any error). This is what makes a finished day follow the player across
+ * devices: whoever solved it on the phone reads the board back on the web.
+ */
+export async function fetchTodayResult(date: string): Promise<TodayResult | null> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from("zborche_results")
+      .select("won, attempts, guesses")
+      .eq("user_id", user.id)
+      .eq("puzzle_date", date)
+      .maybeSingle();
+    if (error || !data) return null;
+
+    return {
+      won: data.won,
+      attempts: data.attempts ?? null,
+      guesses: (data.guesses as string[] | null) ?? null,
+    };
+  } catch {
+    return null;
   }
 }
 

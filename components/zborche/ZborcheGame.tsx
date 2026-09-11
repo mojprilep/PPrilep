@@ -25,7 +25,7 @@ import {
 import ZborcheLogo from "./ZborcheLogo";
 import { loadDictionary } from "../../lib/zborche/dictionary";
 import { recordResult } from "../../lib/zborche/stats";
-import { syncResult } from "../../lib/zborche/leaderboard";
+import { syncResult, fetchTodayResult } from "../../lib/zborche/leaderboard";
 
 type Puzzle = { date: string; word: string; hint: string | null; length: number };
 type Status = "playing" | "won" | "lost";
@@ -101,34 +101,62 @@ export default function ZborcheGame() {
   // colour. Only this row animates, so a restored board doesn't flip on load.
   const [revealRow, setRevealRow] = useState<number | null>(null);
 
-  // Fetch today's word and rehydrate the day's board from storage.
+  // A finished day the server knows about but whose board we can't rebuild
+  // (a result saved before guesses were stored server-side): the day is locked,
+  // but there are no tiles to show — render a short note instead.
+  const [lockedNote, setLockedNote] = useState(false);
+
+  // Fetch today's word and rehydrate the day's board: first from local storage
+  // (instant, offline-friendly), then from the server, which is the source of
+  // truth for "already played today" so a day finished on another device shows
+  // as done here too.
   useEffect(() => {
     let alive = true;
     (async () => {
+      let p: Puzzle | null = null;
+      let saved: Saved | null = null;
       try {
         const res = await fetch("/api/zborche", { cache: "no-store" });
         const data = await res.json();
         if (!alive) return;
-        if (!data?.word) {
-          setPuzzle(null);
-        } else {
-          const p: Puzzle = {
+        if (data?.word) {
+          p = {
             date: data.date,
             word: data.word,
             hint: data.hint ?? null,
             length: data.length,
           };
           setPuzzle(p);
-          const saved = load(p.date);
+          saved = load(p.date);
           if (saved) {
             setGuesses(saved.guesses);
             setStatus(saved.status);
           }
+        } else {
+          setPuzzle(null);
         }
       } catch {
         if (alive) setPuzzle(null);
       } finally {
         if (alive) setLoading(false);
+      }
+
+      // Cross-device sync: pull this player's own result for today. If the
+      // server says the day is done and the local board isn't already finished,
+      // restore it — the exact board when guesses were stored, otherwise a lock.
+      if (!p) return;
+      const server = await fetchTodayResult(p.date);
+      if (!alive || !server) return;
+      if (saved && saved.status !== "playing") return; // local already finished
+      const st: Status = server.won ? "won" : "lost";
+      if (server.guesses && server.guesses.length) {
+        setGuesses(server.guesses);
+        setStatus(st);
+        setLockedNote(false);
+        save(p.date, { guesses: server.guesses, status: st });
+      } else {
+        setStatus(st);
+        setLockedNote(true);
       }
     })();
     return () => {
@@ -161,8 +189,8 @@ export default function ZborcheGame() {
   // primary key) and a no-op when logged out, so it's safe to fire on restore.
   useEffect(() => {
     if (!puzzle || status === "playing") return;
-    void syncResult(puzzle.date, status === "won", guesses.length);
-  }, [puzzle, status, guesses.length]);
+    void syncResult(puzzle.date, status === "won", guesses.length, guesses);
+  }, [puzzle, status, guesses]);
 
   const message = useCallback((m: string) => {
     setFlash(m);
@@ -200,8 +228,9 @@ export default function ZborcheGame() {
       // day); the right-column stats panel refreshes off its event.
       recordResult(puzzle.date, nextStatus === "won", nextGuesses.length);
       // And, for a signed-in player, onto the server so it counts on the public
-      // leaderboard. No-op when logged out; best-effort, never blocks the game.
-      void syncResult(puzzle.date, nextStatus === "won", nextGuesses.length);
+      // leaderboard and syncs across devices. No-op when logged out; best-effort,
+      // never blocks the game.
+      void syncResult(puzzle.date, nextStatus === "won", nextGuesses.length, nextGuesses);
     }
     if (nextStatus === "won") {
       message("Браво! 🎉");
@@ -413,19 +442,27 @@ export default function ZborcheGame() {
 
       {done ? (
         <div className="space-y-3 text-center">
-          <p className="text-sm text-theme-muted">
-            {status === "won"
-              ? `Погоди во ${guesses.length} ${guesses.length === 1 ? "обид" : "обиди"}!`
-              : `Зборот беше „${answer}“.`}
-          </p>
-          <button
-            type="button"
-            onClick={share}
-            className="rounded-xl bg-[#2aa99d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#248f85]"
-          >
-            {copied ? "Копирано ✓" : "Сподели резултат"}
-          </button>
-          <p className="text-xs text-theme-muted">Нов збор секој ден по полноќ.</p>
+          {lockedNote ? (
+            <p className="text-sm text-theme-muted">
+              Веќе играше денес на друг уред. Врати се утре за нова загатка! ✅
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-theme-muted">
+                {status === "won"
+                  ? `Погоди во ${guesses.length} ${guesses.length === 1 ? "обид" : "обиди"}!`
+                  : `Зборот беше „${answer}“.`}
+              </p>
+              <button
+                type="button"
+                onClick={share}
+                className="rounded-xl bg-[#2aa99d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#248f85]"
+              >
+                {copied ? "Копирано ✓" : "Сподели резултат"}
+              </button>
+              <p className="text-xs text-theme-muted">Нов збор секој ден по полноќ.</p>
+            </>
+          )}
         </div>
       ) : (
         <Keyboard
