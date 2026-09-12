@@ -1,12 +1,18 @@
-name: Event reminders (hourly)
+name: Event reminders
 
-# The reminder sweep must run every hour to honour "min(11:00 Skopje, start − 3h)"
-# per event. Vercel Cron can't do sub-daily on the Hobby plan (and an hourly entry
-# in vercel.json silently blocks ALL deploys there), so GitHub Actions drives it
+# The reminder sweep runs every 15 minutes to honour "min(11:00 Skopje, start − 3h)"
+# per event. It was hourly, but GitHub Actions' scheduler routinely runs scheduled
+# jobs late and drops some runs under load — an early event (e.g. an 08:00 kickoff,
+# whose window is 05:00–08:00) could miss every run and never get reminded. A 15-min
+# cadence means a short window still catches a run and cuts effective lateness. The
+# endpoint is idempotent (notified_at dedupes), so the extra runs never double-send.
+#
+# Vercel Cron can't do sub-daily on the Hobby plan (and a sub-daily entry in
+# vercel.json silently blocks ALL deploys there), so GitHub Actions drives it
 # instead by hitting the existing cron endpoint with the shared CRON_SECRET.
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch: {}
 
 permissions:

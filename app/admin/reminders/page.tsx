@@ -6,6 +6,7 @@ import { fetchCityEvents } from "@/lib/sanity/queries";
 import EventReminderAdmin, {
   type ReminderEvent,
 } from "../../../components/admin/EventReminderAdmin";
+import ZborcheBroadcastAdmin from "../../../components/admin/ZborcheBroadcastAdmin";
 import { OWNER_EMAIL } from "../../../lib/config/owner";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,13 @@ export default async function RemindersAdminPage() {
           </p>
         </div>
         <EventReminderAdmin events={reminderEvents} />
+
+        <section className="space-y-2 pt-2">
+          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+            🟩 ЗборЧе
+          </h2>
+          <ZborcheBroadcastAdmin />
+        </section>
       </div>
     </Shell>
   );

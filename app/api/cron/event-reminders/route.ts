@@ -33,6 +33,14 @@ export const maxDuration = 60;
 const BASE_URL = "https://mojprilep.mk";
 const TZ = "Europe/Skopje";
 
+// How long after an event's start a reminder may still go out. GitHub Actions can
+// run this sweep late or drop a run, so the reminder occasionally arrives after the
+// start — delivering it a little late ("it's starting") beats the previous hard
+// cutoff that killed the reminder forever the instant the start passed. Past this
+// grace the event is clearly underway/over, so we stay silent rather than push
+// something stale. All-day events have no start to pass and just fire same-day.
+const LATE_GRACE_MIN = 60;
+
 /** Local Europe/Skopje "now" as { date: "YYYY-MM-DD", minutes: sinceMidnight }. */
 function skopjeNow(): { date: string; minutes: number } {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -177,12 +185,12 @@ export async function GET(req: Request) {
     const reminderMin =
       startMin !== null && startMin < 660 ? Math.max(0, startMin - 180) : 660;
 
-    // Not yet time for this event's reminder — a later hourly run will catch it.
+    // Not yet time for this event's reminder — a later run will catch it.
     if (now.minutes < reminderMin) continue;
 
-    // Never remind after the event has already started.
-    const beforeStart = startMin === null ? true : now.minutes < startMin;
-    if (!beforeStart) continue;
+    // Deliver even if the start just passed (a late/dropped run), but stay silent
+    // once the event is clearly underway — LATE_GRACE_MIN past its start.
+    if (startMin !== null && now.minutes >= startMin + LATE_GRACE_MIN) continue;
 
     const link = `${BASE_URL}${eventPath(ev)}`;
     const whenBits = [ev.time, ev.location].filter(Boolean).join(" · ");
@@ -213,7 +221,7 @@ export async function GET(req: Request) {
       at &&
       at.date === now.date &&
       now.minutes >= pollReminderMin &&
-      now.minutes < at.minutes
+      now.minutes < at.minutes + LATE_GRACE_MIN
     ) {
       const hh = String(Math.floor(at.minutes / 60)).padStart(2, "0");
       const mm = String(at.minutes % 60).padStart(2, "0");
