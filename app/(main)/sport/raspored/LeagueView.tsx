@@ -132,13 +132,12 @@ function StandingsTable({ rows }: { rows: StandingRow[] }) {
           <tr className="border-b border-zinc-100 text-[11px] uppercase tracking-wide text-theme-muted">
             <th className="px-2 py-2 text-left font-semibold">#</th>
             <th className="py-2 pl-1 pr-2 text-left font-semibold">Тим</th>
-            <th className="px-1.5 py-2 text-center font-semibold" title="Одиграни">ОС</th>
-            <th className="px-1.5 py-2 text-center font-semibold" title="Победи">П</th>
-            <th className="px-1.5 py-2 text-center font-semibold" title="Нерешени">Н</th>
-            <th className="px-1.5 py-2 text-center font-semibold" title="Изгубени">И</th>
-            <th className="px-1.5 py-2 text-center font-semibold" title="Голови">Г</th>
-            <th className="px-1.5 py-2 text-center font-semibold" title="Гол-разлика">ГР</th>
-            <th className="px-1.5 py-2 text-center font-bold text-theme-heading" title="Бодови">Б</th>
+            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Одиграни">О</th>
+            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Победа">П</th>
+            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Нерешено">Н</th>
+            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Изгубено">И</th>
+            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Гол разлика">ГР</th>
+            <th className="cursor-help px-1.5 py-2 text-center font-bold text-theme-heading" title="Бодови">Б</th>
             <th className="hidden px-2 py-2 text-left font-semibold sm:table-cell">Форма</th>
           </tr>
         </thead>
@@ -151,9 +150,6 @@ function StandingsTable({ rows }: { rows: StandingRow[] }) {
               <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.won}</td>
               <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.drawn}</td>
               <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.lost}</td>
-              <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
-                {r.goalsFor}:{r.goalsAgainst}
-              </td>
               <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
                 {r.goalDiff > 0 ? `+${r.goalDiff}` : r.goalDiff}
               </td>
