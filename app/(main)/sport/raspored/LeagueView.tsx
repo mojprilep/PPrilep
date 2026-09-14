@@ -39,17 +39,25 @@ function splitDate(round: LeagueRound): { day: string; time: string } {
 
 function MatchRow({ match }: { match: LeagueMatch }) {
   const played = isMatchPlayed(match);
+  // Dim the loser of a played match so the winner stays prominent and you can
+  // read who won at a glance. A draw keeps both sides prominent.
+  const homeLost = played && match.homeScore! < match.awayScore!;
+  const awayLost = played && match.awayScore! < match.homeScore!;
   return (
     <div className="flex items-stretch gap-3 py-2">
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="truncate text-sm text-theme-heading">{match.home}</div>
-        <div className="truncate text-sm text-theme-heading">{match.away}</div>
+        <div className={`truncate text-sm ${homeLost ? "text-theme-muted" : "text-theme-heading"}`}>
+          {match.home}
+        </div>
+        <div className={`truncate text-sm ${awayLost ? "text-theme-muted" : "text-theme-heading"}`}>
+          {match.away}
+        </div>
       </div>
       <div className="flex flex-col items-end justify-center gap-1.5 text-sm font-bold tabular-nums">
-        <span className={played ? "text-theme-heading" : "text-theme-muted"}>
+        <span className={!played || homeLost ? "text-theme-muted" : "text-theme-heading"}>
           {played ? match.homeScore : "-"}
         </span>
-        <span className={played ? "text-theme-heading" : "text-theme-muted"}>
+        <span className={!played || awayLost ? "text-theme-muted" : "text-theme-heading"}>
           {played ? match.awayScore : "-"}
         </span>
       </div>
