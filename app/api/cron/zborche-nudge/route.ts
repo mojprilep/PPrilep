@@ -17,6 +17,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { fetchDailyWord } from "@/lib/sanity/zborche";
 import { sendExpoPush, type PushMessage } from "@/lib/push/expo";
+import { wantsCategory } from "@/lib/push/prefs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -76,7 +77,7 @@ export async function GET(req: Request) {
   // their user hasn't finished today.
   const { data: subs, error: subsErr } = await admin
     .from("push_subscriptions")
-    .select("expo_token, user_id")
+    .select("expo_token, user_id, notif_prefs")
     .eq("enabled", true);
   if (subsErr) {
     console.error("[cron/zborche-nudge] subs", subsErr);
@@ -85,6 +86,7 @@ export async function GET(req: Request) {
   const candidates = [
     ...new Set(
       (subs ?? [])
+        .filter((s) => wantsCategory(s.notif_prefs as Record<string, unknown> | null, "games"))
         .filter((s) => !s.user_id || !playedSet.has(s.user_id as string))
         .map((s) => s.expo_token as string)
         .filter(Boolean),

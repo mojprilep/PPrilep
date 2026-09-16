@@ -16,6 +16,7 @@ import { fetchEventFresh } from "@/lib/sanity/queries";
 import { eventPath } from "@/lib/data/events";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendExpoPush, type PushMessage } from "@/lib/push/expo";
+import { tokensFor } from "@/lib/push/prefs";
 
 const BASE_URL = "https://mojprilep.mk";
 
@@ -44,17 +45,17 @@ export async function broadcastNewEvent(id: string | undefined): Promise<Broadca
     return { error: "claim failed" };
   }
 
-  // Fan out to every enabled device.
+  // Fan out to every enabled device that hasn't muted city-event pushes.
   const { data: rows, error } = await admin
     .from("push_subscriptions")
-    .select("expo_token")
+    .select("expo_token, notif_prefs")
     .eq("enabled", true);
   if (error) {
     console.error("[push/newEvent] tokens", error);
     return { error: "Could not read subscriptions" };
   }
 
-  const tokens = (rows ?? []).map((r) => r.expo_token as string).filter(Boolean);
+  const tokens = tokensFor(rows, "events");
   if (tokens.length === 0) return { ok: true, sent: 0, pruned: 0 };
 
   const link = `${BASE_URL}${eventPath(ev)}`;

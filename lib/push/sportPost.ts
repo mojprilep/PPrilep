@@ -18,6 +18,7 @@
 import { fetchSportPostFresh } from "@/lib/sanity/sport";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendExpoPush, type PushMessage } from "@/lib/push/expo";
+import { tokensFor } from "@/lib/push/prefs";
 
 const BASE_URL = "https://mojprilep.mk";
 
@@ -67,10 +68,10 @@ export async function broadcastNewSportPost(
   const userIds = [...new Set((follows ?? []).map((r) => r.user_id as string))].filter(Boolean);
   if (userIds.length === 0) return { ok: true, sent: 0, pruned: 0 };
 
-  // Their enabled devices.
+  // Their enabled devices that haven't muted sport pushes.
   const { data: rows, error } = await admin
     .from("push_subscriptions")
-    .select("expo_token")
+    .select("expo_token, notif_prefs")
     .eq("enabled", true)
     .in("user_id", userIds);
   if (error) {
@@ -78,7 +79,7 @@ export async function broadcastNewSportPost(
     return { error: "Could not read subscriptions" };
   }
 
-  const tokens = (rows ?? []).map((r) => r.expo_token as string).filter(Boolean);
+  const tokens = tokensFor(rows, "sport");
   if (tokens.length === 0) return { ok: true, sent: 0, pruned: 0 };
 
   const link = `${BASE_URL}/sport/${post.clubSlug}`;

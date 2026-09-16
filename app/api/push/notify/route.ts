@@ -17,6 +17,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { sendExpoPush, type PushMessage } from "../../../../lib/push/expo";
+import { wantsCategory } from "../../../../lib/push/prefs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -47,6 +48,12 @@ const MOBILE_DEAD_LINKS = new Set(["/studio"]);
 // broadcast, so this is the ONLY chance to notify — there is no double-push to
 // avoid here.
 const ALWAYS_ALERT_TYPES = new Set(["sport_submission"]);
+
+// Notification types that count as "utility" (комуналии) — municipal/agency
+// outage-style alerts (EVN electricity, water, etc.). Only these are gated by
+// the device's `utility` preference; personal civic notifications (issue
+// updates, comments, help offers) always reach their recipient regardless.
+const UTILITY_TYPES = new Set(["agency_post", "agency_alert"]);
 
 export async function POST(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -84,7 +91,7 @@ export async function POST(req: Request) {
   const admin = createAdminClient();
   const { data: rows, error } = await admin
     .from("push_subscriptions")
-    .select("expo_token")
+    .select("expo_token, notif_prefs")
     .eq("enabled", true)
     .eq("user_id", rec.recipient_user_id);
 
@@ -93,7 +100,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Could not read subscriptions" }, { status: 500 });
   }
 
-  const tokens = (rows ?? []).map((r) => r.expo_token as string).filter(Boolean);
+  // Utility/agency alerts respect the device's `utility` preference; every other
+  // notification type is personal and always delivered.
+  const isUtility = rec.type ? UTILITY_TYPES.has(rec.type) : false;
+  const tokens = (rows ?? [])
+    .filter((r) =>
+      isUtility ? wantsCategory(r.notif_prefs as Record<string, unknown> | null, "utility") : true,
+    )
+    .map((r) => r.expo_token as string)
+    .filter(Boolean);
   if (tokens.length === 0) {
     return NextResponse.json({ ok: true, sent: 0 });
   }

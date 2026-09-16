@@ -17,6 +17,7 @@ import { NextResponse } from "next/server";
 import { getRequestUser } from "../../../../lib/supabase/request-user";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { sendExpoPush, type PushMessage } from "@/lib/push/expo";
+import { tokensFor } from "@/lib/push/prefs";
 import { OWNER_EMAIL } from "@/lib/config/owner";
 
 export const runtime = "nodejs";
@@ -51,14 +52,14 @@ export async function POST(req: Request) {
 
   const { data: rows, error } = await admin
     .from("push_subscriptions")
-    .select("expo_token")
+    .select("expo_token, notif_prefs")
     .eq("enabled", true);
   if (error) {
     console.error("[push/zborche-broadcast] tokens", error);
     return NextResponse.json({ error: "Could not read subscriptions" }, { status: 500 });
   }
 
-  const tokens = (rows ?? []).map((r) => r.expo_token as string).filter(Boolean);
+  const tokens = tokensFor(rows, "games");
   if (tokens.length === 0) return NextResponse.json({ ok: true, sent: 0 });
 
   const link = `${BASE_URL}/zborche`;
