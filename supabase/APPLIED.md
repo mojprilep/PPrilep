@@ -51,6 +51,7 @@ script not listed separately came back OK on that run.
 | `pause_issue_reporting.sql` | ✅ applied | **Intentionally active.** Reporting is paused. |
 | `restore_issue_reporting.sql` | ⛔ not applied | Deliberate — do not run until reporting is being re-enabled. Pair it with `REPORTING_ENABLED` in `components/ui/ActionModal.tsx`. |
 | `add_zborche_leaderboard.sql` | ✅ applied | Creates `zborche_results` (one row per player per day, insert-only) + the public `zborche_leaderboard()` function for the ЗборЧе cross-user scoreboard. Applied 2026-09-10. |
+| `add_zborche_nudge_log.sql` | ✅ applied | Dedupe ledger for the daily "you haven't played today's ЗборЧе" nudge (`/api/cron/zborche-nudge`): PK `(puzzle_date, expo_token)`, RLS on, service-role only. Applied 2026-09-16. |
 
 ## Not in this folder
 

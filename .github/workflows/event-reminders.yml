@@ -35,3 +35,16 @@ jobs:
           cat /tmp/out.txt
           echo
           test "$code" = "200"
+
+      # The daily "you haven't played today's ЗборЧе" nudge shares this sweep.
+      # The endpoint self-gates to 11:30 Skopje and dedupes per device per day
+      # (zborche_nudge_log), so the every-15-min cadence sends at most once daily.
+      - name: Trigger ЗборЧе nudge
+        run: |
+          code=$(curl -sS -o /tmp/out.txt -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.mojprilep.mk/api/cron/zborche-nudge)
+          echo "HTTP $code"
+          cat /tmp/out.txt
+          echo
+          test "$code" = "200"
