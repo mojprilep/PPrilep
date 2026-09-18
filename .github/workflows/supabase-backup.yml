@@ -1,10 +1,15 @@
 name: Supabase daily backup
 
 on:
-  schedule:
-    # 05:30 UTC ≈ 07:30 Europe/Skopje (UTC+2 in summer / DST, UTC+1 in winter).
-    # Cron has no timezone support, so this drifts to ~06:30 local in winter.
-    - cron: "30 5 * * *"
+  # PAUSED 2026-09-14. The project moved to the Supabase Pro ($25) plan, which
+  # provides managed daily backups, so this DIY dump is redundant — and it read
+  # the whole DB every morning, adding egress we no longer want to spend. Kept
+  # (not deleted) so it can be re-enabled if we ever leave Pro: uncomment the
+  # schedule below. Manual runs still work via workflow_dispatch.
+  # schedule:
+  #   # 05:30 UTC ≈ 07:30 Europe/Skopje (UTC+2 in summer / DST, UTC+1 in winter).
+  #   # Cron has no timezone support, so this drifts to ~06:30 local in winter.
+  #   - cron: "30 5 * * *"
   workflow_dispatch: {}
 
 permissions:
