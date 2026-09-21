@@ -117,7 +117,6 @@ const TRANSKOP_SKOPJE: ScheduledRun[] = [
  */
 const EKSTRA_OHRID: ScheduledRun[] = [run("08:20")];
 const GALEB_OHRID: ScheduledRun[] = [run("08:40", true), run("17:40", true)];
-const AVTO_ATOM_OHRID: ScheduledRun[] = [run("09:40", true)];
 
 /**
  * Прилеп – Кичево runs преку Македонски Брод, and the sheet prices both: the
@@ -166,7 +165,10 @@ export const TIMETABLE: readonly TimetableLine[] = [
     via: "преку Кавадарци и Велес",
     carrier: "Галеб",
     carrierOrigin: "Охрид",
-    runs: [run("18:15", true)],
+    // Two Galeb runs to Скопје: a midday 12:47 (Охрид–Битола–Скопје) and the
+    // evening 18:15 that continues to Белград. The portal lists both; the sheet
+    // only carried the evening one, so 12:47 was the "missing Galeb time".
+    runs: [run("12:47", true), run("18:15", true)],
     fare: { oneWay: 590, oneWayStudent: null, roundTrip: 1000, roundTripStudent: null },
   },
 
@@ -255,15 +257,6 @@ export const TIMETABLE: readonly TimetableLine[] = [
     runs: [run("09:00", true)],
     fare: { oneWay: 200, oneWayStudent: null, roundTrip: null, roundTripStudent: null },
   },
-  {
-    id: "bitola-avto-atom",
-    to: "Битола",
-    via: null,
-    carrier: "Авто Атом",
-    carrierOrigin: "Кочани",
-    runs: AVTO_ATOM_OHRID,
-    fare: { oneWay: 220, oneWayStudent: null, roundTrip: null, roundTripStudent: null },
-  },
 
   // ── Прилеп – Охрид ─────────────────────────────────────────────────────────
   // The same three coaches as Битола, continuing west. Both fares are listed
@@ -285,15 +278,6 @@ export const TIMETABLE: readonly TimetableLine[] = [
     carrierOrigin: "Охрид",
     runs: GALEB_OHRID,
     fare: { oneWay: 630, oneWayStudent: null, roundTrip: 900, roundTripStudent: null },
-  },
-  {
-    id: "ohrid-avto-atom",
-    to: "Охрид",
-    via: "преку Битола и Ресен",
-    carrier: "Авто Атом",
-    carrierOrigin: "Кочани",
-    runs: AVTO_ATOM_OHRID,
-    fare: { oneWay: 630, oneWayStudent: null, roundTrip: 1020, roundTripStudent: null },
   },
 
   // ── Прилеп – Ресен ─────────────────────────────────────────────────────────
@@ -320,16 +304,6 @@ export const TIMETABLE: readonly TimetableLine[] = [
     carrier: "Галеб",
     carrierOrigin: "Охрид",
     runs: GALEB_OHRID,
-    fare: { oneWay: null, oneWayStudent: null, roundTrip: null, roundTripStudent: null },
-  },
-  {
-    id: "resen-avto-atom",
-    to: "Ресен",
-    via: "преку Битола",
-    note: "Со линиите за Охрид",
-    carrier: "Авто Атом",
-    carrierOrigin: "Кочани",
-    runs: AVTO_ATOM_OHRID,
     fare: { oneWay: null, oneWayStudent: null, roundTrip: null, roundTripStudent: null },
   },
 
@@ -437,15 +411,6 @@ export const TIMETABLE: readonly TimetableLine[] = [
     carrierOrigin: "Охрид",
     runs: [run("08:40", true)],
     fare: { oneWay: 720, oneWayStudent: null, roundTrip: 1010, roundTripStudent: null },
-  },
-  {
-    id: "kocani-avto-atom",
-    to: "Кочани",
-    via: "преку Велес и Штип",
-    carrier: "Авто Атом",
-    carrierOrigin: "Кочани",
-    runs: [run("15:40", true)],
-    fare: { oneWay: 720, oneWayStudent: null, roundTrip: 1060, roundTripStudent: null },
   },
 
   // ── Прилеп – Кичево ────────────────────────────────────────────────────────
