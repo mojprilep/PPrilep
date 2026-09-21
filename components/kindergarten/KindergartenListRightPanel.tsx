@@ -10,7 +10,7 @@ import type { SignupDocument, MenuPost } from "../../lib/sanity/kindergarten";
 
 interface Props {
   signupDocuments: SignupDocument[];
-  latestMenu: MenuPost | null;
+  latestMenu: MenuPost[];
 }
 
 /** Shape the panel renders — derived from either Sanity or the fallback list. */
@@ -74,11 +74,11 @@ export default function KindergartenListRightPanel({ signupDocuments, latestMenu
             <span className="text-base">🍽️</span>
             <p className="text-sm font-semibold text-zinc-500">Мени</p>
           </div>
-          {latestMenu?.title && (
-            <span className="text-[10px] text-zinc-400">{latestMenu.title}</span>
+          {latestMenu[0]?.title && (
+            <span className="text-[10px] text-zinc-400">{latestMenu[0].title}</span>
           )}
         </div>
-        <WeeklyMenuPanel menu={latestMenu} />
+        <WeeklyMenuPanel menus={latestMenu} />
       </div>
 
       {/* ── About ── */}

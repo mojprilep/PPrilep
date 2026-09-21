@@ -16,7 +16,7 @@ import type {
 
 interface Props {
   institution: KindergartenInstitution;
-  todayMenu: MenuPost | null;
+  todayMenu: MenuPost[];
   currentProgramme: ProgrammePost | null;
   recentAnnouncements: KindergartenAnnouncement[];
   signupDocuments: SignupDocument[];
@@ -59,7 +59,7 @@ export default function KindergartenRightPanel({
           <span className="text-base">🍽️</span>
           <p className="text-xs font-semibold text-zinc-500">Мени</p>
         </div>
-        <WeeklyMenuPanel menu={todayMenu} />
+        <WeeklyMenuPanel menus={todayMenu} />
       </div>
 
       {/* ── Signup documents ── */}

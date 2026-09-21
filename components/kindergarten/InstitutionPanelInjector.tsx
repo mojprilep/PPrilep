@@ -15,7 +15,7 @@ interface Props {
   slug: string;
   institution: KindergartenInstitution;
   allInstitutions: KindergartenInstitution[];
-  todayMenu: MenuPost | null;
+  todayMenu: MenuPost[];
   currentProgramme: ProgrammePost | null;
   recentAnnouncements: KindergartenAnnouncement[];
   signupDocuments: SignupDocument[];

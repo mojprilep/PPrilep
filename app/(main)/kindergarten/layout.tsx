@@ -9,7 +9,7 @@ import KindergartenListPanelInjector from "../../../components/kindergarten/Kind
 export default async function KindergartenLayout({ children }: { children: React.ReactNode }) {
   const [signupDocuments, latestMenu] = await Promise.all([
     fetchSignupDocuments(null).catch(() => []),
-    fetchLatestGlobalMenu().catch(() => null),
+    fetchLatestGlobalMenu().catch(() => []),
   ]);
 
   return (

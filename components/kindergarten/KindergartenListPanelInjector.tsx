@@ -8,7 +8,7 @@ import type { SignupDocument, MenuPost } from "../../lib/sanity/kindergarten";
 
 interface Props {
   signupDocuments: SignupDocument[];
-  latestMenu: MenuPost | null;
+  latestMenu: MenuPost[];
 }
 
 // Receives pre-fetched data from the server layout and injects the panel into

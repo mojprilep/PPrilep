@@ -32,14 +32,18 @@ export type DayMenu = {
   breakfast: string | null;
   snack1:    string | null;
   lunch:     string | null;
+  salad:     string | null;
   snack2:    string | null;
 };
+
+export type AgeGroup = "under2" | "age2to6";
 
 export type MenuPost = {
   _id:       string;
   weekStart: string;
   weekEnd:   string | null;
   title:     string | null;
+  ageGroup:  AgeGroup | null;
   monday:    DayMenu | null;
   tuesday:   DayMenu | null;
   wednesday: DayMenu | null;
@@ -101,11 +105,14 @@ const STAFF_BY_INSTITUTION_QUERY = `
   }
 `;
 
-// Always returns the most recent menu — no institution filter since the
-// kindergarten uses one shared menu across all 4 locations.
+// Returns every menu doc for the most recent week — one per age group (до 2 /
+// 2–6 години), so the panel can render both tables. No institution filter since
+// the kindergarten uses one shared menu across all 4 locations. Legacy weeks
+// have a single doc with no ageGroup; that still comes back as a one-item array.
 const CURRENT_WEEK_MENU_QUERY = `
-  *[_type == "menuPost"] | order(weekStart desc)[0] {
-    _id, weekStart, weekEnd, title,
+  *[_type == "menuPost" && weekStart == *[_type == "menuPost"] | order(weekStart desc)[0].weekStart]
+  | order(ageGroup asc) {
+    _id, weekStart, weekEnd, title, ageGroup,
     monday, tuesday, wednesday, thursday, friday
   }
 `;
@@ -155,12 +162,12 @@ export async function fetchStaffByInstitution(institutionId: string): Promise<St
   return sanityClient.fetch(STAFF_BY_INSTITUTION_QUERY, { institutionId }, { next: { revalidate: 3600 } });
 }
 
-export async function fetchTodayMenu(_institutionId: string): Promise<MenuPost | null> {
-  // Shared menu across all institutions — no params needed
+export async function fetchTodayMenu(_institutionId: string): Promise<MenuPost[]> {
+  // Shared menu across all institutions — no params needed. One doc per age group.
   return sanityClient.fetch(CURRENT_WEEK_MENU_QUERY, {}, { next: { revalidate: 0 } });
 }
 
-export async function fetchLatestGlobalMenu(): Promise<MenuPost | null> {
+export async function fetchLatestGlobalMenu(): Promise<MenuPost[]> {
   return sanityClient.fetch(CURRENT_WEEK_MENU_QUERY, {}, { next: { revalidate: 0 } });
 }
 

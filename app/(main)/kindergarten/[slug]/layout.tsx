@@ -52,7 +52,7 @@ export default async function InstitutionLayout({
 
   const [todayMenu, currentProgramme, recentAnnouncements, signupDocuments] =
     await Promise.all([
-      fetchTodayMenu(institution._id).catch(() => null),
+      fetchTodayMenu(institution._id).catch(() => []),
       fetchCurrentProgramme(institution._id).catch(() => null),
       fetchRecentAnnouncements(institution._id).catch(() => []),
       fetchSignupDocuments(institution._id).catch(() => []),
