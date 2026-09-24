@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Phone, Clock, MapPin, ChevronRight, FileDown } from "lucide-react";
 import { formatDays } from "../../lib/utils";
 import WeeklyMenuPanel from "./WeeklyMenuPanel";

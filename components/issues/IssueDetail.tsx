@@ -8,7 +8,7 @@ import BlurImage from "../ui/BlurImage";
 import { IMAGE_QUALITY } from "../../lib/imageQuality";
 import { compressImage } from "../../lib/compressImage";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import {
   X,
   Share2,

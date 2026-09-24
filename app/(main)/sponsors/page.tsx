@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Lightbulb, Trophy, Building2, Users, HandHeart } from "lucide-react";
 import { createClient } from "../../../lib/supabase/client";
 import AvatarInitials, { type MembershipTier } from "../../../components/ui/AvatarInitials";

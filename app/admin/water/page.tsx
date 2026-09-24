@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { createClient } from "../../../lib/supabase/server";
 import { redirect } from "next/navigation";
 import Shell from "../../../components/layout/Shell";

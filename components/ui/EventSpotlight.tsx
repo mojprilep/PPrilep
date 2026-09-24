@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { CalendarDays, MapPin, Star, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { urlForImage } from "../../lib/sanity/image";

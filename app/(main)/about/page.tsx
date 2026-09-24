@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import ContactForm from "../../../components/about/ContactForm";
 
 export default function AboutPage() {

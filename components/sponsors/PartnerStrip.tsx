@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 import {

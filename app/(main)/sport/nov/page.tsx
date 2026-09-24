@@ -10,7 +10,7 @@
  */
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 
 import { useAuth } from "../../../../lib/hooks/useAuth";
 import ClubSubmitForm from "../../../../components/sport/ClubSubmitForm";

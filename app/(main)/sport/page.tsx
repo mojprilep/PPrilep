@@ -7,7 +7,7 @@
  */
 
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronRight, Footprints, Plus } from "lucide-react";
 
 import SportDirectory from "../../../components/sport/SportDirectory";

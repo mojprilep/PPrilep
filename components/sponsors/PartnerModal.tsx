@@ -6,7 +6,7 @@ import {
   ArrowLeft, X, User, Building2, Mail, Phone, MessageSquare, Send, Check, HandHeart,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { cn } from "../../lib/utils";
 import { toast } from "sonner";
 import { submitMembershipRequest } from "../../app/actions/membership";

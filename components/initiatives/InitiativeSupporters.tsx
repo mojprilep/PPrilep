@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { X } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 import AvatarInitials, { type MembershipTier } from "../ui/AvatarInitials";

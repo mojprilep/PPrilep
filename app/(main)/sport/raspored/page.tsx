@@ -7,7 +7,7 @@
  */
 
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ArrowLeft } from "lucide-react";
 
 import { computeStandings, fetchActiveLeague } from "../../../../lib/sanity/sport";

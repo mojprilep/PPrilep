@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Heart } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 import { useAuthContext as useAuth } from "../../lib/context/AuthContext";

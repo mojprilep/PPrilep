@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Star, CalendarDays, MapPin, Clock } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { cn } from "../../lib/utils";
 import ShareSheet from "../ui/ShareSheet";
 import BlurImage from "../ui/BlurImage";

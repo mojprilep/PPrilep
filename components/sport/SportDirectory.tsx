@@ -10,7 +10,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Search, MapPin, BadgeCheck, ChevronDown } from "lucide-react";
 
 import { urlForImage } from "../../lib/sanity/image";

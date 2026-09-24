@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronDown } from "lucide-react";
 import { CATEGORY_LABELS, categoryIcon } from "../../lib/utils";
 import type { Category } from "../../lib/types/database";

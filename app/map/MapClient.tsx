@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { X } from "lucide-react";
 import { CATEGORY_LABELS, getIssuePath, cdnUrl } from "../../lib/utils";
 import type { Category, District, IssueStatus } from "../../lib/types/database";

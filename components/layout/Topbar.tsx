@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ImagePlus, Menu, Plus, UserCircle2 } from "lucide-react";
 import Button from "../ui/Button";
 import UserMenu from "../auth/UserMenu";

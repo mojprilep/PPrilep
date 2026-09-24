@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import BlurImage from "../ui/BlurImage";
 import { useState } from "react";
 import { X } from "lucide-react";

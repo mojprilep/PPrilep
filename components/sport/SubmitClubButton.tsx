@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useAuthContext } from "../../lib/context/AuthContext";
 import SubmitClubModal from "./SubmitClubModal";
 

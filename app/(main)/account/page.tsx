@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useAuth } from "../../../lib/hooks/useAuth";
 import { createClient } from "../../../lib/supabase/client";
 import { compressImage } from "../../../lib/compressImage";

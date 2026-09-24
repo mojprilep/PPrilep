@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import BlurImage from "../ui/BlurImage";
 import { IMAGE_QUALITY } from "../../lib/imageQuality";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Send, X, Link2 } from "lucide-react";
 import StatusPill from "../ui/StatusPill";
 import StatusTimelinePopup from "../ui/StatusTimelinePopup";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { AlertTriangle, MapPin } from "lucide-react";
 import { formatDays, getIssuePath, STATUS_LABELS } from "../../lib/utils";
 

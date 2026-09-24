@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin, Users, Calendar, Coins, ExternalLink } from "lucide-react";
 import { createPublicClient } from "../../../../lib/supabase/public";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useOptimistic, useState, useTransition, useCallback } from "react";

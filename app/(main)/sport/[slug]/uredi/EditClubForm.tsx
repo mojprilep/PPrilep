@@ -16,7 +16,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Check, ImagePlus, Plus, Trash2 } from "lucide-react";
 
 import {

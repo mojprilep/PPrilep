@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Lightbulb, Vote, Coins, Trophy, Plus } from "lucide-react";
 import type { InitiativeTab } from "../../lib/initiatives";
 

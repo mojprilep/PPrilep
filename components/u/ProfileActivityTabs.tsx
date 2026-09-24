@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import StatusPill from "../ui/StatusPill";
 import { DISTRICT_LABELS, formatDays } from "../../lib/utils";
 

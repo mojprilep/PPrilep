@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import DynamicGreeting from "../../components/home/DynamicGreeting";
 import HomeAgencyFeed from "../../components/agency/HomeAgencyFeed";
 import { createPublicClient } from "../../lib/supabase/public";

@@ -1,5 +1,5 @@
 import ProgressBar from "../ui/ProgressBar";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import type { FundCampaign } from "../../lib/types/database";
 import { districtColor, cn, DISTRICT_LABELS } from "../../lib/utils";
 import type { District } from "../../lib/types/database";

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Users, CalendarDays, ChevronRight, X, Trash2 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { createClient } from "../../lib/supabase/client";
 import AvatarInitials from "../ui/AvatarInitials";
 import { cn } from "../../lib/utils";

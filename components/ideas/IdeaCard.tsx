@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ThumbsUp, Trash2 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { createClient } from "../../lib/supabase/client";
 import { createNotification } from "../../lib/notifications";
 import { formatDays, cn } from "../../lib/utils";

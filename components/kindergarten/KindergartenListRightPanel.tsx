@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { FileDown, Clock, Check, MapPin, ChevronDown } from "lucide-react";
 import WeeklyMenuPanel from "./WeeklyMenuPanel";
 import { INSTITUTION_FALLBACK } from "../../lib/kindergarten-fallback";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { LogOut } from "lucide-react";
 import { useAuth } from "../../lib/hooks/useAuth";
 import { createClient } from "../../lib/supabase/client";

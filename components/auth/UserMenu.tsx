@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { useState, useRef, useEffect } from "react";
 import { LogOut, UserCircle2, Megaphone } from "lucide-react";
 import AvatarInitials from "../ui/AvatarInitials";

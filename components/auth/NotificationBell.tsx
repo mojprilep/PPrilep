@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { Bell } from "lucide-react";
 import { createClient } from "../../lib/supabase/client";
 import { isMissingNotificationsTableError } from "../../lib/notifications";

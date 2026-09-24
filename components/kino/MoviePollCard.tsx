@@ -6,7 +6,7 @@
  * this stays a link and does not pull in the poll's client state.
  */
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { ChevronRight, Film } from "lucide-react";
 
 import { formatScreening, isLive, loadPoll } from "../../lib/sanity/moviePoll";
