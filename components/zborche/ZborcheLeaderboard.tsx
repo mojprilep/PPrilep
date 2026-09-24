@@ -66,7 +66,7 @@ export default function ZborcheLeaderboard() {
                 key={r.user_id}
                 className="flex items-center gap-2 rounded-lg px-1.5 py-1 odd:bg-[#f6faf8]"
               >
-                <span className="w-5 shrink-0 text-right text-[13px] font-bold text-slate-500">
+                <span className="w-7 shrink-0 text-left text-[13px] font-bold text-slate-500">
                   {medal(i)}
                 </span>
                 <AvatarInitials name={r.name} avatarUrl={r.avatar_url} size="sm" />

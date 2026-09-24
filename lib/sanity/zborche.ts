@@ -17,6 +17,8 @@ export type DailyWord = {
   /** Uppercase Macedonian Cyrillic. */
   word: string;
   hint: string | null;
+  /** "Learn a new word" note, shown only once the day's game is over. */
+  explanation: string | null;
   length: number;
 };
 
@@ -25,6 +27,7 @@ type SanityZborche = {
   word: string;
   date: string;
   hint?: string;
+  explanation?: string;
 };
 
 /**
@@ -51,7 +54,7 @@ export async function fetchDailyWord(): Promise<DailyWord | null> {
   try {
     const today = skopjeToday();
     const doc = await sanityClient.fetch<SanityZborche | null>(
-      `*[_type == "zborche" && date == $today][0]{_id, word, date, hint}`,
+      `*[_type == "zborche" && date == $today][0]{_id, word, date, hint, explanation}`,
       { today },
     );
     if (!doc?.word) return null;
@@ -61,6 +64,7 @@ export async function fetchDailyWord(): Promise<DailyWord | null> {
       date: doc.date,
       word,
       hint: doc.hint?.trim() || null,
+      explanation: doc.explanation?.trim() || null,
       length: word.length,
     };
   } catch {

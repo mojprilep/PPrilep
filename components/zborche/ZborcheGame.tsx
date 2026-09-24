@@ -27,7 +27,13 @@ import { loadDictionary } from "../../lib/zborche/dictionary";
 import { recordResult } from "../../lib/zborche/stats";
 import { syncResult, fetchTodayResult } from "../../lib/zborche/leaderboard";
 
-type Puzzle = { date: string; word: string; hint: string | null; length: number };
+type Puzzle = {
+  date: string;
+  word: string;
+  hint: string | null;
+  explanation: string | null;
+  length: number;
+};
 type Status = "playing" | "won" | "lost";
 type Saved = { guesses: string[]; status: Status };
 
@@ -124,6 +130,7 @@ export default function ZborcheGame() {
             date: data.date,
             word: data.word,
             hint: data.hint ?? null,
+            explanation: data.explanation ?? null,
             length: data.length,
           };
           setPuzzle(p);
@@ -462,6 +469,19 @@ export default function ZborcheGame() {
               </button>
               <p className="text-xs text-theme-muted">Нов збор секој ден по полноќ.</p>
             </>
+          )}
+          {/* "Learn a new word" — only after the game is over, so it can't
+              give the answer away. */}
+          {puzzle.explanation && (
+            <div className="mx-auto max-w-[22rem] rounded-xl border border-theme bg-theme-surface px-4 py-3 text-left">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2aa99d]">
+                📖 Научи нов збор
+              </p>
+              <p className="mt-1 text-sm font-bold text-theme-heading">{answer}</p>
+              <p className="mt-1 text-sm leading-relaxed text-theme-muted">
+                {puzzle.explanation}
+              </p>
+            </div>
           )}
         </div>
       ) : (

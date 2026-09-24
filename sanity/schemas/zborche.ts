@@ -59,6 +59,16 @@ export default defineType({
       description: "Мала помош што играчот може да ја открие. Остави празно ако не сакаш.",
       validation: (r) => r.max(120),
     }),
+    defineField({
+      name: "explanation",
+      title: "Научи нов збор (опционално)",
+      type: "text",
+      rows: 3,
+      description:
+        "Кратко објаснување на зборот, се прикажува откако играчот ќе ја заврши " +
+        "играта. Корисно за потешки или стари зборови.",
+      validation: (r) => r.max(400),
+    }),
   ],
 
   // Newest first — the schedule reads like a calendar, next word on top.

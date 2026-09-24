@@ -8,7 +8,7 @@
  * force-dynamic + no-store: the word flips at local midnight, and a shared cache
  * could serve yesterday's answer past the boundary.
  *
- *   GET → { date, id, word, hint, length }   (word null when none scheduled)
+ *   GET → { date, id, word, hint, explanation, length }   (word null when none scheduled)
  */
 
 import { NextResponse } from "next/server";
@@ -33,6 +33,7 @@ export async function GET() {
       id: puzzle.id,
       word: puzzle.word,
       hint: puzzle.hint,
+      explanation: puzzle.explanation,
       length: puzzle.length,
     },
     { headers: NO_STORE },
