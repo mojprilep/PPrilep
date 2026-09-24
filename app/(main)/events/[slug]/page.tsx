@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock, MapPin, ExternalLink } from "lucide-react";
 import { fetchEventByKey, type SanityEvent } from "@/lib/sanity/queries";
@@ -17,6 +17,14 @@ import EventPoll from "@/components/events/EventPoll";
 import EventCover from "@/components/events/EventCover";
 
 const BASE_URL = "https://mojprilep.mk";
+
+// Sanity-only content (interest + poll load client-side), so the page can be
+// cached. The Sanity webhook's revalidateTag("events") purges it on publish.
+export const revalidate = 300;
+// Empty = render each path on first visit, then cache it (runtime ISR).
+export async function generateStaticParams() {
+  return [];
+}
 
 interface Props {
   params: Promise<{ slug: string }>;

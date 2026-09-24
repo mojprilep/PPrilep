@@ -91,6 +91,29 @@ function secondsUntilOpen(d = new Date()): number | null {
   return Math.max(60, untilMin * 60);
 }
 
+// Which bus runs which line changes a few times a day at most, but this route
+// runs every ~10s. Keep the fleet in the (Fluid, reused) instance's memory for
+// 30s so most runs skip the Supabase round-trip; a line reassignment shows up
+// within 30s.
+const FLEET_TTL_MS = 30_000;
+let fleetCache: { rows: FleetRow[]; at: number } | null = null;
+
+async function loadFleet(): Promise<FleetRow[] | null> {
+  if (fleetCache && Date.now() - fleetCache.at < FLEET_TTL_MS) return fleetCache.rows;
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("buses")
+    .select("id,label,flespi_device_id,active_line_id")
+    .eq("is_active", true)
+    .not("active_line_id", "is", null);
+  if (error) {
+    console.error("[buses/positions] fleet", error.message);
+    return null;
+  }
+  fleetCache = { rows: (data ?? []) as FleetRow[], at: Date.now() };
+  return fleetCache.rows;
+}
+
 export async function GET() {
   // Off-hours: no bus runs. Skip all work and let the CDN hold this empty
   // response until service reopens — near-zero invocations, zero Supabase/Flespi.
@@ -117,21 +140,17 @@ export async function GET() {
   if (!TOKEN) return empty;
 
   // In-service buses with a line assigned (operator-editable in the buses table).
-  const admin = createAdminClient();
-  const { data: fleet, error } = await admin
-    .from("buses")
-    .select("id,label,flespi_device_id,active_line_id")
-    .eq("is_active", true)
-    .not("active_line_id", "is", null);
-  if (error) {
-    console.error("[buses/positions] fleet", error.message);
-    return empty;
-  }
+  const fleet = await loadFleet();
   if (!fleet || fleet.length === 0) return empty;
 
   const nowS = Date.now() / 1000;
+  // Only messages Flespi received within MAX_AGE_S — older fixes would be
+  // dropped below anyway, so there's no point downloading them.
   const fixes = await Promise.all(
-    (fleet as FleetRow[]).map(async (b) => ({ b, fix: await lastFix(b.flespi_device_id, TOKEN!) })),
+    fleet.map(async (b) => ({
+      b,
+      fix: await lastFix(b.flespi_device_id, TOKEN!, nowS - MAX_AGE_S),
+    })),
   );
 
   const buses = fixes.flatMap(({ b, fix }) => {

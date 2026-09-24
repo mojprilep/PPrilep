@@ -22,13 +22,31 @@ export function num(v: unknown): number | null {
   return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
 
-/** Newest valid fix for a device, by Flespi receive time. Null on error/no fix. */
+/**
+ * Newest valid fix for a device, by Flespi receive time. Null on error/no fix.
+ *
+ * `sinceS` (unix seconds) asks Flespi for only the messages it RECEIVED after
+ * that moment, so a live bus needs a few dozen messages instead of 100 and a
+ * parked one returns nothing at all. Filter on server.timestamp only — never
+ * on position.valid: recent messages carry no such field, and Flespi treats a
+ * missing field as a non-match, which returned hours-old fixes when tested.
+ */
 export async function lastFix(
   deviceId: number,
   token: string,
+  sinceS?: number,
 ): Promise<Msg | null> {
   const data = encodeURIComponent(
-    JSON.stringify({ reverse: true, count: 100, fields: FIELDS }),
+    JSON.stringify(
+      sinceS === undefined
+        ? { reverse: true, count: 100, fields: FIELDS }
+        : {
+            reverse: true,
+            count: 30,
+            fields: FIELDS,
+            filter: `server.timestamp>${Math.floor(sinceS)}`,
+          },
+    ),
   );
   try {
     const res = await fetch(

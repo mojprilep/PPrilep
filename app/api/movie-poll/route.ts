@@ -14,6 +14,10 @@
  *
  *   GET  ?pollId=…&visitorId=…   → { poll, options[], total, mine }
  *        (pollId omitted → the newest open poll)
+ *   GET  ?pollId=…&shared=1      → same, minus anything personal (mine: null,
+ *        own: false), CDN-cached 30s for everyone. Clients use it for viewers
+ *        who are signed out and have not voted in this poll — most page views —
+ *        and fall back to the personal GET for everyone else.
  *   POST { pollId, action: "vote"|"remove"|"suggest", optionId?, title?, visitorId }
  */
 
@@ -28,6 +32,11 @@ export const runtime = "nodejs";
 // Same reasoning as the event poll: a vote must be visible to its own voter on
 // the very next load, so nothing here is shared-cached.
 const NO_STORE = { "Cache-Control": "no-store" };
+// The shared (identity-free) view: other people's votes may lag by up to 30s.
+const SHARED_CACHE = {
+  "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=30",
+  "CDN-Cache-Control": "public, s-maxage=30, stale-while-revalidate=30",
+};
 
 type Admin = ReturnType<typeof createAdminClient>;
 
@@ -103,17 +112,25 @@ export async function GET(req: Request) {
   // A Sanity document id — an opaque string, not a number.
   const pollId = params.get("pollId")?.trim().slice(0, 100) || null;
   const visitorId = params.get("visitorId")?.trim().slice(0, 100) || undefined;
+  const shared = params.get("shared") === "1";
 
   try {
     const admin = createAdminClient();
-    const user = await getRequestUser(req);
+    // Shared mode never looks at who is asking, so one cached copy fits all.
+    const user = shared ? null : await getRequestUser(req);
     const poll = await loadPoll(pollId);
-    if (!poll) return NextResponse.json(EMPTY, { headers: NO_STORE });
+    if (!poll) {
+      return NextResponse.json(EMPTY, { headers: shared ? SHARED_CACHE : NO_STORE });
+    }
 
-    const state = await stateFor(admin, poll.id, { userId: user?.id, visitorId });
+    const state = await stateFor(
+      admin,
+      poll.id,
+      shared ? {} : { userId: user?.id, visitorId },
+    );
     return NextResponse.json(
       { poll: { ...poll, live: isLive(poll) }, ...state },
-      { headers: NO_STORE },
+      { headers: shared ? SHARED_CACHE : NO_STORE },
     );
   } catch (err) {
     console.error("[movie-poll] GET failed", err);

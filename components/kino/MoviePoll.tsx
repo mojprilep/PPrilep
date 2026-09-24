@@ -49,8 +49,39 @@ function visitorId(): string {
   }
 }
 
+/**
+ * Polls this browser has voted or suggested in. A signed-out visitor who has
+ * never taken part has nothing personal to show, so they get the shared,
+ * CDN-cached view; everyone else gets the personal one.
+ */
+const JOINED_KEY = "pp_moviepoll_joined";
+
+/** Null = never recorded (browsers from before this list existed). */
+function joinedPolls(): string[] | null {
+  try {
+    const stored = localStorage.getItem(JOINED_KEY);
+    if (stored === null) return null;
+    const raw = JSON.parse(stored);
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function markJoined(id: string | null) {
+  try {
+    const ids = joinedPolls() ?? [];
+    if (id === null || !ids.includes(id)) {
+      const next = id === null ? ids : [...ids, id].slice(-20);
+      localStorage.setItem(JOINED_KEY, JSON.stringify(next));
+    }
+  } catch {
+    // Storage blocked: they just get the shared view on the next visit.
+  }
+}
+
 export default function MoviePoll({ pollId }: { pollId?: string }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [poll, setPoll] = useState<Poll | null>(null);
   const [options, setOptions] = useState<Option[]>([]);
   const [total, setTotal] = useState(0);
@@ -65,14 +96,36 @@ export default function MoviePoll({ pollId }: { pollId?: string }) {
   const [editTitle, setEditTitle] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const signedIn = !!user;
+
   const load = useCallback(async () => {
-    const params = new URLSearchParams();
-    if (pollId) params.set("pollId", pollId);
-    const v = visitorId();
-    if (v) params.set("visitorId", v);
-    try {
+    const get = async (personal: boolean) => {
+      const params = new URLSearchParams();
+      if (pollId) params.set("pollId", pollId);
+      if (personal) {
+        const v = visitorId();
+        if (v) params.set("visitorId", v);
+      } else {
+        params.set("shared", "1");
+      }
       const res = await fetch(`/api/movie-poll?${params}`, { cache: "no-store" });
-      const data = await res.json();
+      return res.json();
+    };
+    try {
+      const joined = joinedPolls();
+      let data;
+      if (!signedIn && joined === null) {
+        // First load since this list was introduced: ask once personally, so
+        // someone who already voted keeps seeing their vote, and start the list.
+        data = await get(true);
+        markJoined(data.poll && data.mine != null ? data.poll.id : null);
+      } else {
+        data = await get(signedIn);
+        // Took part in this poll before: their vote needs the personal view.
+        if (!signedIn && data.poll && joined?.includes(data.poll.id)) {
+          data = await get(true);
+        }
+      }
       setPoll(data.poll);
       setOptions(data.options ?? []);
       setTotal(data.total ?? 0);
@@ -82,11 +135,13 @@ export default function MoviePoll({ pollId }: { pollId?: string }) {
     } finally {
       setLoading(false);
     }
-  }, [pollId]);
+  }, [pollId, signedIn]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    // Wait for the session check, so a signed-in user is not first served the
+    // shared view and then reloaded.
+    if (!authLoading) load();
+  }, [load, authLoading]);
 
   async function send(payload: Record<string, unknown>) {
     if (!poll || busy) return;
@@ -103,6 +158,7 @@ export default function MoviePoll({ pollId }: { pollId?: string }) {
         setError(data.error ?? "Нешто тргна наопаку.");
         return;
       }
+      markJoined(poll.id);
       setOptions(data.options ?? []);
       setTotal(data.total ?? 0);
       setMine(data.mine ?? null);

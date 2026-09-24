@@ -1,5 +1,5 @@
-import { createClient } from "../../../../lib/supabase/server";
-import Link from "next/link";
+import { createPublicClient } from "../../../../lib/supabase/public";
+import Link from "@/components/ui/Link";
 import StatusPill from "../../../../components/ui/StatusPill";
 import BusRouteMap from "../../../../components/ui/BusRouteMap";
 import BusLineManager from "../../../../components/transport/BusLineManager";
@@ -9,9 +9,12 @@ import WaterInfoAccordion from "../../../../components/utility/WaterInfoAccordio
 import KomunalecQuickActions from "../../../../components/utility/KomunalecQuickActions";
 import KomunalecInfoAccordion from "../../../../components/utility/KomunalecInfoAccordion";
 import ParkingInfoAccordion from "../../../../components/utility/ParkingInfoAccordion";
-import KomunalecContactForm from "../../../../components/komunalec/KomunalecContactForm";
 import KomunalecRequestQueue from "../../../../components/komunalec/KomunalecRequestQueue";
-import AgencyPostCard from "../../../../components/agency/AgencyPostCard";
+import {
+  AgencyPostList,
+  ManagedOnly,
+  ViewerKomunalecContactForm,
+} from "../../../../components/utility/UtilityViewerParts";
 import { formatDays } from "../../../../lib/utils";
 import type { AgencyId } from "../../../../lib/agencies";
 import type {
@@ -71,6 +74,14 @@ const PROVIDER_SUBTITLES: Record<Provider, string> = {
   kindergarten: "Официјални соопштенија од градинките во Прилеп",
 };
 
+// Public data only (cookie-free client), so the page is cached and rebuilt at
+// most once a minute. Staff tools and the form pre-fill are resolved in the
+// browser (UtilityViewerParts). Live bus positions never come from this page —
+// BusRouteMap polls them client-side — so caching adds no tracking delay.
+export const revalidate = 60;
+export async function generateStaticParams() {
+  return PROVIDERS.map((provider) => ({ provider }));
+}
 
 interface Props {
   params: Promise<{ provider: string }>;
@@ -100,11 +111,11 @@ export default async function UtilityPage({ params }: Props) {
   if (!PROVIDERS.includes(provider as Provider)) notFound();
   const p = provider as Provider;
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
+  const agencyId = PROVIDER_AGENCY[p];
   const nowIso = new Date().toISOString();
-  const [{ data: authUser }, { data: posts }, { data: agencyPosts }] =
+  const [{ data: posts }, { data: agencyPosts }] =
     await Promise.all([
-      supabase.auth.getUser(),
       supabase
         .from("utility_posts")
         .select("*")
@@ -113,7 +124,7 @@ export default async function UtilityPage({ params }: Props) {
       supabase
         .from("agency_posts")
         .select("*")
-        .eq("agency_id", PROVIDER_AGENCY[p])
+        .eq("agency_id", agencyId)
         .or(`starts_at.is.null,starts_at.lte.${nowIso}`)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
         .order("created_at", { ascending: false })
@@ -121,26 +132,6 @@ export default async function UtilityPage({ params }: Props) {
     ]);
 
   const agencyList = (agencyPosts as AgencyPost[] | null) ?? [];
-
-  // Admin or this provider's own operator may manage the announcements here.
-  let canManage = false;
-  let viewer: {
-    is_admin?: boolean;
-    agency_id?: string | null;
-    full_name?: string | null;
-    district?: string | null;
-    street_name?: string | null;
-  } | null = null;
-  if (authUser.user) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("is_admin, agency_id, full_name, district, street_name")
-      .eq("id", authUser.user.id)
-      .maybeSingle();
-    viewer = data;
-    canManage =
-      viewer?.is_admin === true || viewer?.agency_id === PROVIDER_AGENCY[p];
-  }
 
   return (
       <div className="space-y-6">
@@ -194,12 +185,10 @@ export default async function UtilityPage({ params }: Props) {
               <h2 className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700">
                 💬 Контакт и барања
               </h2>
-              <KomunalecContactForm
-                loggedIn={!!authUser.user}
-                defaultName={viewer?.full_name ?? undefined}
-                defaultStreet={viewer?.street_name ?? undefined}
-              />
-              {canManage && <KomunalecRequestQueue />}
+              <ViewerKomunalecContactForm />
+              <ManagedOnly agencyId={agencyId}>
+                <KomunalecRequestQueue />
+              </ManagedOnly>
             </div>
           </>
         )}
@@ -209,7 +198,9 @@ export default async function UtilityPage({ params }: Props) {
           <div className="space-y-2">
             <h2 className="text-sm font-semibold text-zinc-700">Линии на градски превоз</h2>
             <BusRouteMap />
-            {canManage && <BusLineManager />}
+            <ManagedOnly agencyId={agencyId}>
+              <BusLineManager />
+            </ManagedOnly>
           </div>
         )}
 
@@ -220,9 +211,8 @@ export default async function UtilityPage({ params }: Props) {
               📣 Соопштенија од службата
             </h2>
             <div className="max-h-112 space-y-3 overflow-y-auto pr-1">
-              {agencyList.map((post) => (
-                <AgencyPostCard key={post.id} post={post} canManage={canManage} />
-              ))}
+              <AgencyPostList posts={agencyList} agencyId={agencyId} />
+
             </div>
           </div>
         )}
