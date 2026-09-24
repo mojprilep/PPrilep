@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useViewer } from "../../lib/useViewer";
 
 type Props = {
   fallbackName: string;
@@ -55,7 +56,9 @@ function weatherIcon(code: number): string {
 }
 
 export default function DynamicGreeting({ fallbackName }: Props) {
-  const [placeLabel] = useState(fallbackName || "Прилеп");
+  // The name fills in after hydration so the page can stay cached.
+  const { firstName } = useViewer();
+  const placeLabel = firstName ?? (fallbackName || "Прилеп");
   const [weather, setWeather] = useState<WeatherData | null>(null);
 
   useEffect(() => {

@@ -1,6 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import CampaignCard from "@/components/fund/CampaignCard";
 import { notFound } from "next/navigation";
+
+// Public data only (cookie-free client), so the page can be cached.
+export const revalidate = 60;
+// Empty = render each path on first visit, then cache it (runtime ISR).
+export async function generateStaticParams() {
+  return [];
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -11,7 +18,7 @@ export default async function FundCampaignDetailPage({ params }: Props) {
   const campaignId = Number(id);
   if (!Number.isInteger(campaignId)) notFound();
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: campaign } = await supabase
     .from("fund_campaigns")
     .select("*, profiles(id, full_name, username)")

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin, Users, Calendar, Coins, ExternalLink } from "lucide-react";
-import { createClient } from "../../../../lib/supabase/server";
+import { createPublicClient } from "../../../../lib/supabase/public";
 import {
   CATEGORY_LABELS_INIT,
   STAGE_BADGE,
@@ -16,12 +16,19 @@ import type { InitiativeWithDetails } from "../../../../lib/types/database";
 
 const BASE_URL = "https://mojprilep.mk";
 
+// Public data only (cookie-free client), so the page can be cached.
+export const revalidate = 60;
+// Empty = render each path on first visit, then cache it (runtime ISR).
+export async function generateStaticParams() {
+  return [];
+}
+
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 async function fetchInitiative(id: string): Promise<InitiativeWithDetails | null> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("initiatives_with_details")
     .select("*")

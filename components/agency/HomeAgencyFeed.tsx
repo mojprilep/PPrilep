@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import AgencyPostCard from "./AgencyPostCard";
+import { useViewer } from "../../lib/useViewer";
 import { AGENCIES, type AgencyId } from "../../lib/agencies";
 import type { AgencyPost } from "../../lib/types/database";
 
@@ -19,6 +20,9 @@ export default function HomeAgencyFeed({
   canManage?: boolean;
 }) {
   const [filter, setFilter] = useState<"all" | AgencyId>("all");
+  // Admins are detected in the browser so the home page can stay cached.
+  const { isAdmin } = useViewer();
+  const manage = canManage || isAdmin;
 
   // Only offer company chips that actually have posts.
   const companies = useMemo(() => {
@@ -71,7 +75,7 @@ export default function HomeAgencyFeed({
             key={post.id}
             post={post}
             showAgency
-            canManage={canManage}
+            canManage={manage}
           />
         ))}
       </div>

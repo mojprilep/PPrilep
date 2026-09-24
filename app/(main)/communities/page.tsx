@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase/server";
+import { createPublicClient } from "../../../lib/supabase/public";
 import { DISTRICT_LABELS } from "../../../lib/utils";
 import DistrictCard from "../../../components/communities/DistrictCard";
 import CommunitiesExport from "../../../components/communities/CommunitiesExport";
@@ -21,13 +21,11 @@ const CATEGORIES: Category[] = [
   "negligent", "transport", "parking", "admin", "other",
 ];
 
-export default async function CommunitiesPage() {
-  const supabase = await createClient();
+// Public data only; the admin export button checks the viewer client-side.
+export const revalidate = 60;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const isAdmin = user
-    ? (await supabase.from("profiles").select("is_admin").eq("id", user.id).single()).data?.is_admin === true
-    : false;
+export default async function CommunitiesPage() {
+  const supabase = createPublicClient();
 
   const { data: issues } = await supabase
     .from("issues")
@@ -86,7 +84,7 @@ export default async function CommunitiesPage() {
             <p className="text-xs font-semibold text-white/70 uppercase tracking-wide">
               Прилеп — Вкупно
             </p>
-            {isAdmin && <CommunitiesExport stats={stats} issues={allIssues} />}
+            <CommunitiesExport stats={stats} issues={allIssues} />
           </div>
           <div className="grid grid-cols-4 gap-2 text-center">
             <div>

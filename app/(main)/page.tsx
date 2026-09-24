@@ -1,7 +1,7 @@
 import Link from "next/link";
 import DynamicGreeting from "../../components/home/DynamicGreeting";
 import HomeAgencyFeed from "../../components/agency/HomeAgencyFeed";
-import { createClient } from "../../lib/supabase/server";
+import { createPublicClient } from "../../lib/supabase/public";
 import { DISTRICT_LABELS, STATUS_LABELS, getIssuePath } from "../../lib/utils";
 import { STAGE_LABEL } from "../../lib/initiatives";
 import { fetchTopHeroes } from "../../lib/data/issues";
@@ -24,19 +24,22 @@ type HomeInitiative = {
   created_at: string;
 };
 
+// Same page for every visitor, cached for a minute. The personal bits (the
+// greeting name, admin controls on the feed) are filled in client-side by
+// useViewer, so the server never reads cookies here.
+export const revalidate = 60;
+
 export default async function HomePage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   // Hide agency posts whose active window hasn't started or has ended.
   const nowIso = new Date().toISOString();
 
   const [
-    { data: authUser },
     { data: issues },
     { data: initiatives },
     heroes,
     { data: agencyPosts },
   ] = await Promise.all([
-    supabase.auth.getUser(),
     supabase
       .from("issues")
       .select("id, title, district, status, created_at")
@@ -59,30 +62,6 @@ export default async function HomePage() {
       .limit(40),
   ]);
 
-  const user = authUser.user;
-  let greetingName = "Прилеп";
-  let isAdmin = false;
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, username, is_admin")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    isAdmin = profile?.is_admin === true;
-
-    const rawName =
-      profile?.full_name ??
-      (typeof user.user_metadata?.full_name === "string"
-        ? user.user_metadata.full_name
-        : null) ??
-      profile?.username ??
-      null;
-
-    if (rawName) greetingName = rawName.trim().split(/\s+/)[0];
-  }
-
   // Live leaderboard: top citizens by real community applause.
   const topHeroes: { count: number; name: string }[] = heroes.map((h) => ({
     name: h.name,
@@ -96,14 +75,14 @@ export default async function HomePage() {
   return (
     <div>
       <div>
-        <DynamicGreeting fallbackName={greetingName} />
+        <DynamicGreeting fallbackName="Прилеп" />
       </div>
       <div className="mt-6 lg:mt-8">
         <p className="my-3 text-lg leading-8 text-theme-muted">
           Пријави проблеми. Координирај локални акции. Држи ги лидерите
           одговорни.
         </p>
-        <HomeAgencyFeed posts={posts} canManage={isAdmin} />
+        <HomeAgencyFeed posts={posts} />
 
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
           <section className="rounded-xl border border-theme bg-theme-surface p-4">

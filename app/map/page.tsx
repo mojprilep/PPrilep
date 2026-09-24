@@ -1,4 +1,4 @@
-import { createClient } from "../../lib/supabase/server";
+import { createPublicClient } from "../../lib/supabase/public";
 import type { Metadata } from "next";
 import type { PinnedIssue } from "./MapClient";
 import MapWrapper from "./MapWrapper";
@@ -10,8 +10,11 @@ export const metadata: Metadata = {
     "Визуелизација на пријавени проблеми според категорија на мапа на Прилеп",
 };
 
+// Public data only (cookie-free client), so the page can be cached.
+export const revalidate = 60;
+
 export default async function MapPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   // Include issues with a pin AND issues with only a street name (no pin)
   const { data: issues } = await supabase

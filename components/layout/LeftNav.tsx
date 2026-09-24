@@ -372,7 +372,7 @@ export default function LeftNav() {
             />
             <LeftNavItem
               href="/sport/raspored"
-              label="Трета Лига Југ"
+              label="Лига регион 4"
               iconNode={<FontAwesomeIcon icon={faFutbol} className="h-4 w-4" />}
               iconTone="orange"
             />

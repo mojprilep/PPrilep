@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import StatusPill from "@/components/ui/StatusPill";
 import { formatDays } from "@/lib/utils";
 import type { Provider, IssueStatus } from "@/lib/types/database";
@@ -35,6 +35,13 @@ interface Props {
   params: Promise<{ provider: string; id: string }>;
 }
 
+// Public data only (cookie-free client), so the page can be cached.
+export const revalidate = 60;
+// Empty = render each path on first visit, then cache it (runtime ISR).
+export async function generateStaticParams() {
+  return [];
+}
+
 export default async function UtilityPostDetailPage({ params }: Props) {
   const { provider, id } = await params;
   if (!PROVIDERS.includes(provider as Provider)) notFound();
@@ -43,7 +50,7 @@ export default async function UtilityPostDetailPage({ params }: Props) {
   if (!Number.isInteger(postId)) notFound();
 
   const p = provider as Provider;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: post } = await supabase
     .from("utility_posts")
     .select("*")

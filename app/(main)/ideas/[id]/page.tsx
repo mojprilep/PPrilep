@@ -1,7 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import AvatarInitials from "@/components/ui/AvatarInitials";
 import { formatDays } from "@/lib/utils";
 import { notFound } from "next/navigation";
+
+// Public data only (cookie-free client), so the page can be cached.
+export const revalidate = 60;
+// Empty = render each path on first visit, then cache it (runtime ISR).
+export async function generateStaticParams() {
+  return [];
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -12,7 +19,7 @@ export default async function IdeaDetailPage({ params }: Props) {
   const ideaId = Number(id);
   if (!Number.isInteger(ideaId)) notFound();
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: idea } = await supabase
     .from("ideas")
     .select("*, profiles(id, full_name, avatar_url, username, membership_tier, points)")

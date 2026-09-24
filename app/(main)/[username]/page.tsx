@@ -1,4 +1,4 @@
-import { createClient } from "../../../lib/supabase/server";
+import { createPublicClient } from "../../../lib/supabase/public";
 import { notFound } from "next/navigation";
 import { TIER_CONFIG } from "../../../lib/tiers";
 import ProfileActivityTabs, {
@@ -14,6 +14,13 @@ interface Props {
 // UUID v4 pattern — used to detect user_id slugs vs plain usernames
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Public data only (cookie-free client), so the page can be cached.
+export const revalidate = 60;
+// Empty = render each path on first visit, then cache it (runtime ISR).
+export async function generateStaticParams() {
+  return [];
+}
+
 export default async function PublicProfilePage({ params }: Props) {
   const { username: raw } = await params;
   const slug = decodeURIComponent(raw);
@@ -22,7 +29,7 @@ export default async function PublicProfilePage({ params }: Props) {
   // segments (issues, account, …) must never resolve to a profile lookup.
   if (!UUID_RE.test(slug) && isReservedUsername(slug)) notFound();
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   const isUuid = UUID_RE.test(slug);
   const { data: profile } = await supabase

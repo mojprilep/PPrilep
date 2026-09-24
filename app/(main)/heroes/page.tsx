@@ -1,6 +1,9 @@
 import AvatarInitials from "../../../components/ui/AvatarInitials";
-import { createClient } from "../../../lib/supabase/server";
+import { createPublicClient } from "../../../lib/supabase/public";
 import { fetchTopHeroes } from "../../../lib/data/issues";
+
+// Public data only (cookie-free client), so the page can be cached.
+export const revalidate = 60;
 
 interface Hero {
   name: string;
@@ -45,7 +48,7 @@ function HeroList({ heroes }: { heroes: Hero[] }) {
 }
 
 export default async function HeroesPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   // Full leaderboard: everyone credited on a resolved issue, ranked by the real
   // applause (issue_resolution_upvotes) their solved issues received.
   const rows = await fetchTopHeroes(supabase, 50);

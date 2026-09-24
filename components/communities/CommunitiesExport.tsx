@@ -2,6 +2,7 @@
 
 import { Download } from "lucide-react";
 import { CATEGORY_LABELS, DISTRICT_LABELS } from "../../lib/utils";
+import { useViewer } from "../../lib/useViewer";
 import type { DistrictStat } from "./DistrictCard";
 import type { Category, District } from "../../lib/types/database";
 
@@ -44,6 +45,8 @@ function row(...cells: string[]): string {
 }
 
 export default function CommunitiesExport({ stats, issues }: Props) {
+  const { isAdmin } = useViewer();
+
   function exportCSV() {
     const lines: string[] = [];
 
@@ -124,6 +127,9 @@ export default function CommunitiesExport({ stats, issues }: Props) {
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  // Admin-only, decided in the browser so /communities can stay cached.
+  if (!isAdmin) return null;
 
   return (
     <button
