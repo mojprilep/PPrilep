@@ -5,6 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { X, MapPin, Loader2 } from "lucide-react";
 import { type Street, matchStreet, prettyStreetName } from "../../lib/data/streets";
+import { LANDMARKS } from "../../lib/data/landmarks";
 
 interface Props {
   initialLat?: number | null;
@@ -144,6 +145,18 @@ export default function LocationPickerModal({
     });
 
     map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    // Orientation labels. pointer-events:none so a tap on one still lands on
+    // the map and moves the pin there.
+    for (const l of LANDMARKS) {
+      const el = document.createElement("div");
+      el.textContent = `${l.emoji} ${l.name}`;
+      el.style.cssText =
+        "pointer-events:none;white-space:nowrap;padding:2px 7px;border-radius:999px;" +
+        "background:rgba(255,255,255,.92);border:1px solid #e2e8f0;" +
+        "box-shadow:0 1px 3px rgba(15,23,43,.15);font:600 11px/1.4 system-ui,sans-serif;color:#334155";
+      new maplibregl.Marker({ element: el }).setLngLat(l.lngLat).addTo(map);
+    }
 
     const marker = new maplibregl.Marker({
       color: "#0d9488",
