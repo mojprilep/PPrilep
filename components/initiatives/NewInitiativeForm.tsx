@@ -42,6 +42,8 @@ const DISTRICTS: District[] = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ];
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS_INIT) as InitiativeCategory[];
@@ -173,6 +175,7 @@ export default function NewInitiativeForm({
     else if (state.description.trim().length > 2000)
       e.description = "Максимум 2000 знаци";
     if (!state.category) e.category = "Изберете категорија";
+    if (!state.district) e.district = "Изберете населба";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -545,19 +548,22 @@ function Step1({
           <FieldError msg={errors.category} />
         </div>
         <div>
-          <Label htmlFor="district">Населба</Label>
+          <Label htmlFor="district">Населба *</Label>
           <select
             id="district"
             className={inputCls}
             value={state.district}
             onChange={(e) => set("district", e.target.value as District)}>
-            <option value="">— По избор —</option>
+            <option value="" disabled>
+              — Изберете —
+            </option>
             {DISTRICTS.map((d) => (
               <option key={d} value={d}>
                 {DISTRICT_LABELS[d] ?? d}
               </option>
             ))}
           </select>
+          <FieldError msg={errors.district} />
         </div>
       </div>
 

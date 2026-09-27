@@ -26,6 +26,8 @@ const DISTRICTS = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ] as const;
 
 const DISTRICT_MK: Record<District, string> = {
@@ -37,6 +39,8 @@ const DISTRICT_MK: Record<District, string> = {
   Tipski: "Типски",
   Boncejca: "Бончејца",
   KorzoMaalo: "Корзо Маало",
+  MarinoMaalo: "Марино Маало",
+  Cacorica: "Чачорица",
 };
 
 const schema = z.object({

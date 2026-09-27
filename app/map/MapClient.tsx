@@ -49,6 +49,8 @@ const DISTRICT_CENTERS: Record<District, [number, number]> = {
   Tipski: [21.545, 41.354],
   Boncejca: [21.535, 41.348],
   KorzoMaalo: [21.551, 41.343],
+  MarinoMaalo: [21.5735, 41.3488],
+  Cacorica: [21.5487, 41.3368],
 };
 
 // Prileple bounding box — users can't pan outside the city

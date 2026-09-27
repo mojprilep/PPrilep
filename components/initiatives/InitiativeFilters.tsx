@@ -18,6 +18,8 @@ const DISTRICTS: District[] = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ];
 
 interface Props {

@@ -14,6 +14,8 @@ const DISTRICTS: District[] = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ];
 
 const CATEGORIES: Category[] = [

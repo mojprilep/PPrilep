@@ -38,6 +38,8 @@ const DISTRICTS: Array<District | "all"> = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ];
 const CATEGORIES: Array<Category | "all"> = [
   "all",

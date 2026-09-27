@@ -51,6 +51,8 @@ const DISTRICTS = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ] as const;
 
 const REPORT_CATEGORIES = [
@@ -75,6 +77,8 @@ const DISTRICT_MK: Record<string, string> = {
   Tipski: "Типски",
   Boncejca: "Бончејца",
   KorzoMaalo: "Корзо Маало",
+  MarinoMaalo: "Марино Маало",
+  Cacorica: "Чачорица",
 };
 
 const CATEGORY_MK: Record<string, string> = {
@@ -95,7 +99,7 @@ const reportSchema = z.object({
   title: z.string().min(5, "Насловот мора да има барем 5 знаци"),
   description: z.string().optional(),
   street_name: z.string().optional(),
-  district: z.enum(DISTRICTS),
+  district: z.enum(DISTRICTS, { error: "Изберете населба" }),
   category: z.enum(REPORT_CATEGORIES),
 });
 type ReportFields = z.infer<typeof reportSchema>;
@@ -232,7 +236,7 @@ export default function ActionModal({ userId, userEmail, userName, agencyId, onC
     formState: { errors: rErr, isSubmitting: rBusy },
   } = useForm<ReportFields>({
     resolver: zodResolver(reportSchema),
-    defaultValues: { district: "Center", category: "road" },
+    defaultValues: { category: "road" },
   });
 
   const watchedCategory = useWatch({ control: rCtrl, name: "category" });
@@ -699,13 +703,22 @@ export default function ActionModal({ userId, userEmail, userName, agencyId, onC
                         </label>
                         <select
                           {...rReg("district")}
+                          defaultValue=""
                           className="mt-1.5 w-full cursor-pointer rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none focus:border-teal-500">
+                          <option value="" disabled>
+                            — Изберете —
+                          </option>
                           {DISTRICTS.map((d) => (
                             <option key={d} value={d}>
                               {DISTRICT_MK[d]}
                             </option>
                           ))}
                         </select>
+                        {rErr.district && (
+                          <p className="mt-1 text-[11px] text-red-500">
+                            {rErr.district.message}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="text-sm font-medium text-zinc-700">

@@ -28,7 +28,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const DISTRICTS: District[] = [
-  "Center", "Varoš", "Trizla", "Točila", "Rid", "Tipski", "Boncejca", "KorzoMaalo",
+  "Center", "Varoš", "Trizla", "Točila", "Rid", "Tipski", "Boncejca", "KorzoMaalo", "MarinoMaalo", "Cacorica",
 ];
 
 const CATEGORIES: Category[] = [

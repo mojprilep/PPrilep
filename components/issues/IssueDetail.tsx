@@ -59,6 +59,8 @@ const DISTRICT_OPTIONS: District[] = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ];
 import { toast } from "sonner";
 import { createClient } from "../../lib/supabase/client";

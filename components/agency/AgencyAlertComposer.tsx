@@ -19,6 +19,8 @@ const DISTRICTS: District[] = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ];
 
 type Audience = "street" | "district" | "all";

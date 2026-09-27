@@ -14,7 +14,9 @@ export type District =
   | "Rid"
   | "Tipski"
   | "Boncejca"
-  | "KorzoMaalo";
+  | "KorzoMaalo"
+  | "MarinoMaalo"
+  | "Cacorica";
 export type Category =
   | "road"
   | "water"

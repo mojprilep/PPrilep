@@ -26,13 +26,15 @@ const DISTRICTS = [
   "Tipski",
   "Boncejca",
   "KorzoMaalo",
+  "MarinoMaalo",
+  "Cacorica",
 ] as const;
 
 const createSchema = z.object({
   title: z.string().trim().min(10, "Минимум 10 знаци").max(120, "Максимум 120 знаци"),
   description: z.string().trim().min(20, "Минимум 20 знаци").max(2000, "Максимум 2000 знаци"),
   category: z.enum(CATEGORIES as unknown as [InitiativeCategory, ...InitiativeCategory[]]),
-  district: z.enum(DISTRICTS).nullable().optional(),
+  district: z.enum(DISTRICTS, { error: "Изберете населба" }),
   street_name: z.string().trim().max(160).nullable().optional(),
   lat: z.coerce.number().nullable().optional(),
   lng: z.coerce.number().nullable().optional(),

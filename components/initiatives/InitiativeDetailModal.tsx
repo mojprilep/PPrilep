@@ -63,7 +63,8 @@ export default function InitiativeDetailModal({
   const [deleting, setDeleting] = useState(false);
 
   const isOwner = !!currentUserId && currentUserId === initiative.user_id;
-  const canEdit = isOwner;
+  // Admins can edit too, e.g. to re-file an initiative under the right category.
+  const canEdit = isOwner || isAdmin;
   const canDelete = isOwner || isAdmin;
   const canManage = isOwner || isAdmin;
 

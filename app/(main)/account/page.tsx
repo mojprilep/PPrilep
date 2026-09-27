@@ -738,6 +738,8 @@ export default function AccountPage() {
                     <option value="Tipski">Типски</option>
                     <option value="Boncejca">Бончејца</option>
                     <option value="KorzoMaalo">Корзо Маало</option>
+                    <option value="MarinoMaalo">Марино Маало</option>
+                    <option value="Cacorica">Чачорица</option>
                   </select>
                 </div>
 

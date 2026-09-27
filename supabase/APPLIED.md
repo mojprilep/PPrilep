@@ -53,6 +53,8 @@ script not listed separately came back OK on that run.
 | `add_zborche_leaderboard.sql` | ✅ applied | Creates `zborche_results` (one row per player per day, insert-only) + the public `zborche_leaderboard()` function for the ЗборЧе cross-user scoreboard. Applied 2026-09-10. |
 | `add_zborche_nudge_log.sql` | ✅ applied | Dedupe ledger for the daily "you haven't played today's ЗборЧе" nudge (`/api/cron/zborche-nudge`): PK `(puzzle_date, expo_token)`, RLS on, service-role only. Applied 2026-09-16. |
 | `add_notif_prefs.sql` | ❓ unverified | Adds `push_subscriptions.notif_prefs` (jsonb) for per-category push opt-outs (games/events/sport/utility/parking). NULL = all-on. Written by `/api/push/prefs`, read by senders via `lib/push/prefs.ts`. Not yet run. |
+| `add_districts_marino_cacorica.sql` | ✅ applied | Widens the `district` CHECK on issues and initiatives to allow `MarinoMaalo` (Марино Маало) and `Cacorica` (Чачорица). Applied 2026-09-27. Prod `ideas` has NO district column (the script skips it), even though `NewIdeaModal` inserts one. |
+| `fix_initiatives_admin_update.sql` | ✅ applied | Recreates the "Own or admin update initiative" policy so admins can edit any initiative (category re-filing). The admin edit failed with "Cannot coerce the result to a single JSON object", so the policy from `add_admin_moderation.sql` was not live. Applied 2026-09-27. Note: prod DELETE on initiatives is still owner-only ("Own delete initiative"), so the admin delete in `add_admin_moderation.sql` is not live either. |
 
 ## Not in this folder
 

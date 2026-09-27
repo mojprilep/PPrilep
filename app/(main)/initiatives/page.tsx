@@ -23,7 +23,7 @@ function asTab(v: string | undefined): InitiativeTab {
 }
 
 const VALID_DISTRICTS = new Set([
-  "Center", "Varoš", "Trizla", "Točila", "Rid", "Tipski", "Boncejca", "KorzoMaalo",
+  "Center", "Varoš", "Trizla", "Točila", "Rid", "Tipski", "Boncejca", "KorzoMaalo", "MarinoMaalo", "Cacorica",
 ]);
 const VALID_CATEGORIES = new Set(Object.keys(CATEGORY_LABELS_INIT));
 
