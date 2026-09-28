@@ -15,6 +15,20 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [{ source: "/prevoz", destination: "/utility/transport" }];
   },
+  // apex → www, except /.well-known: Apple/Google fetch the app-link files
+  // (apple-app-site-association, assetlinks.json) from the apex too and don't
+  // follow redirects. Only takes effect once the apex domain in Vercel is set
+  // to serve the project instead of redirecting at the edge.
+  async redirects() {
+    return [
+      {
+        source: "/:path((?!\\.well-known/).*)",
+        has: [{ type: "host", value: "mojprilep.mk" }],
+        destination: "https://www.mojprilep.mk/:path",
+        permanent: false,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
