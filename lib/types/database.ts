@@ -26,6 +26,7 @@ export type Category =
   | "negligent"
   | "transport"
   | "parking"
+  | "vehicles"
   | "admin"
   | "other";
 export type IssueStatus =

@@ -35,6 +35,7 @@ const CATEGORY_COLORS: Record<Category, string> = {
   negligent: "#f97316",
   transport: "#8b5cf6",
   parking: "#06b6d4",
+  vehicles: "#db2777",
   admin: "#6b7280",
   other: "#94a3b8",
 };

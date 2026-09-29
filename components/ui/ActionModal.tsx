@@ -64,6 +64,7 @@ const REPORT_CATEGORIES = [
   "negligent",
   "transport",
   "parking",
+  "vehicles",
   "admin",
   "other",
 ] as const;
@@ -90,6 +91,7 @@ const CATEGORY_MK: Record<string, string> = {
   negligent: "Несовесни граѓани",
   transport: "Градски превоз",
   parking: "Паркинзи",
+  vehicles: "Хаварисани возила",
   admin: "Јавна Администрација",
   other: "Друго",
 };

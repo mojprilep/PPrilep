@@ -49,6 +49,7 @@ export const AGENCY_BY_CATEGORY: Record<Category, AgencyId> = {
   parking: "transport_parking",
   road: "municipality",
   negligent: "municipality",
+  vehicles: "municipality",
   admin: "municipality",
   other: "municipality",
 };

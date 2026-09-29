@@ -51,6 +51,7 @@ const CATEGORIES: Array<Category | "all"> = [
   "negligent",
   "transport",
   "parking",
+  "vehicles",
   "admin",
   "other",
 ];

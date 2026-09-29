@@ -33,7 +33,7 @@ const DISTRICTS: District[] = [
 
 const CATEGORIES: Category[] = [
   "road", "water", "power", "garbage", "park",
-  "negligent", "transport", "parking", "admin", "other",
+  "negligent", "transport", "parking", "vehicles", "admin", "other",
 ];
 
 function cell(v: string): string {

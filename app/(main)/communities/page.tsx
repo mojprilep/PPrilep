@@ -20,7 +20,7 @@ const DISTRICTS: District[] = [
 
 const CATEGORIES: Category[] = [
   "road", "water", "power", "garbage", "park",
-  "negligent", "transport", "parking", "admin", "other",
+  "negligent", "transport", "parking", "vehicles", "admin", "other",
 ];
 
 // Public data only; the admin export button checks the viewer client-side.
