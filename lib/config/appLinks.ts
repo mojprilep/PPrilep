@@ -67,3 +67,19 @@ export const APP_LINK_PATHS = [
   "/recycle",
   "/heroes",
 ];
+
+/** One AASA-style pattern (`*` = any run of characters) as an anchored regex. */
+function patternToRegex(pattern: string): RegExp {
+  const body = pattern.split("*").map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*");
+  return new RegExp(`^${body}$`);
+}
+
+const EXCLUDE_RE = APP_LINK_EXCLUDE.map(patternToRegex);
+const PATHS_RE = APP_LINK_PATHS.map(patternToRegex);
+
+/** Whether the app claims this web path — the same answer iOS/Android reach. */
+export function isAppLinkPath(pathname: string): boolean {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  if (EXCLUDE_RE.some((re) => re.test(path))) return false;
+  return PATHS_RE.some((re) => re.test(path));
+}
