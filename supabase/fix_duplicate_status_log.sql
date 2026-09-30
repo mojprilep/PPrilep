@@ -99,4 +99,5 @@ delete from public.issue_status_log d
    and d.status   = k.status
    and d.note is null and k.note is null
    and d.id > k.id
-   and d.created_at - k.created_at between interval '0' and interval '5 seconds';
+   -- abs(): concurrent inserts can get ids and timestamps in opposite order.
+   and abs(extract(epoch from d.created_at - k.created_at)) <= 5;
