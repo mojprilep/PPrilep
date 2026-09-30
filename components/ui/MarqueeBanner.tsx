@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "../../lib/supabase/client";
 
 // How long an agency alert stays in the banner after it's posted. There's no
 // expires_at column on agency_posts, so recency is the auto-clear mechanism.
 const WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+// Scroll speed in px/s. The animation duration is derived from the text's
+// width, so one short alert and three long ones move at the same pace (a fixed
+// duration made long text race across).
+const SPEED_PX_PER_S = 40;
 
 // Icon per sending institution; red alerts override with a warning sign.
 const AGENCY_ICON: Record<string, string> = {
@@ -39,6 +44,8 @@ function label(a: AgencyAlert): string {
 export default function MarqueeBanner() {
   const supabase = useMemo(() => createClient(), []);
   const [alerts, setAlerts] = useState<AgencyAlert[]>([]);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [duration, setDuration] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -77,11 +84,25 @@ export default function MarqueeBanner() {
     };
   }, [supabase]);
 
+  // Duplicate the list so the marquee loop is seamless.
+  const full = alerts.length ? [...alerts, ...alerts].map(label).join("     ·     ") : "";
+
+  // Distance travelled = start offset (20vw, see @keyframes marquee) + the
+  // text's own width; duration = distance / speed. Re-measured on resize.
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    const measure = () => {
+      const distance = window.innerWidth * 0.2 + el.scrollWidth;
+      setDuration(Math.max(10, distance / SPEED_PX_PER_S));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [full]);
+
   // No active alerts → no banner (the layout simply has no bar).
   if (alerts.length === 0) return null;
-
-  // Duplicate the list so the marquee loop is seamless.
-  const full = [...alerts, ...alerts].map(label).join("     ·     ");
 
   return (
     <div className="bg-theme-ink text-theme-on-dark h-11 flex items-center overflow-hidden border-b border-zinc-700 shrink-0 ">
@@ -89,7 +110,11 @@ export default function MarqueeBanner() {
         LIVE
       </span>
       <div className="overflow-hidden flex-1 relative">
-        <span className="animate-marquee text-[11px] tracking-wide text-theme-on-dark">
+        <span
+          ref={textRef}
+          className="animate-marquee text-[11px] tracking-wide text-theme-on-dark"
+          style={duration ? { animationDuration: `${duration}s` } : undefined}
+        >
           {full}
         </span>
       </div>

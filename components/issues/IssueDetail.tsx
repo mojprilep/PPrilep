@@ -165,6 +165,9 @@ function PeoplePopup({
 
 // ChangeRequest type imported from lib/data/issues.ts
 
+// Issue ids this page session already auto-acknowledged (see the effect below).
+const autoAckedIssueIds = new Set<number>();
+
 export default function IssueDetail({
   issue,
   userId,
@@ -679,11 +682,16 @@ export default function IssueDetail({
 
   // When the responsible institution opens a still-untouched ("open") issue,
   // auto-advance it to "Видено" once — so the reporter sees it was seen.
+  // Pages mount IssueDetail twice (desktop + mobile layout, one CSS-hidden),
+  // so the once-guard is shared per issue id across instances — otherwise both
+  // fire and the reporter's timeline gets two "Видено" rows.
   useEffect(() => {
     if (autoAckRef.current) return;
     if (!canAgencyHandle || !userId) return;
     if (currentIssue.status !== "open") return;
     autoAckRef.current = true;
+    if (autoAckedIssueIds.has(currentIssue.id)) return;
+    autoAckedIssueIds.add(currentIssue.id);
     changeStatus("acknowledged");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canAgencyHandle, userId, currentIssue.status]);
