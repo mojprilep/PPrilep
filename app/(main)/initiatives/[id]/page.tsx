@@ -10,6 +10,7 @@ import {
   daysRemaining,
 } from "../../../../lib/initiatives";
 import { cn, DISTRICT_LABELS, cdnUrl, formatDays } from "../../../../lib/utils";
+import InitiativeCover from "../../../../components/initiatives/InitiativeCover";
 import AvatarInitials, { type MembershipTier } from "../../../../components/ui/AvatarInitials";
 import ShareSheet from "../../../../components/ui/ShareSheet";
 import type { InitiativeWithDetails } from "../../../../lib/types/database";
@@ -90,10 +91,10 @@ export default async function InitiativeDetailPage({ params }: Props) {
 
       <article className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
         {cover && (
-          <div className="relative h-56 w-full sm:h-72">
+          <InitiativeCover src={cover} className="relative h-56 w-full sm:h-72">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={cover} alt={i.title} className="h-full w-full object-cover" />
-          </div>
+          </InitiativeCover>
         )}
 
         <div className="space-y-4 p-5">

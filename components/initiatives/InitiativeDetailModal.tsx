@@ -30,6 +30,7 @@ import SegmentedProgressBar from "./SegmentedProgressBar";
 import InitiativeSupporters from "./InitiativeSupporters";
 import InitiativeManagePanel from "./InitiativeManagePanel";
 import InitiativeGallery from "./InitiativeGallery";
+import InitiativeCover from "./InitiativeCover";
 import type { InitiativeWithDetails } from "../../lib/types/database";
 
 interface Props {
@@ -193,7 +194,10 @@ export default function InitiativeDetailModal({
         {/* Scrollable body */}
         <div className="overflow-y-auto overflow-x-hidden px-4 py-4 space-y-4 wrap-break-word">
           {initiative.cover_image_url && (
-            <div className="relative w-full h-52 sm:h-64 rounded-xl overflow-hidden bg-zinc-100">
+            <InitiativeCover
+              src={cdnUrl(initiative.cover_image_url)}
+              className="relative w-full h-52 sm:h-64 rounded-xl overflow-hidden bg-zinc-100"
+            >
               <Image
                 src={cdnUrl(initiative.cover_image_url)}
                 alt={initiative.title}
@@ -201,7 +205,7 @@ export default function InitiativeDetailModal({
                 sizes="(max-width: 640px) 100vw, 640px"
                 className="object-cover"
               />
-            </div>
+            </InitiativeCover>
           )}
 
           <div className="flex items-start justify-between gap-3">
