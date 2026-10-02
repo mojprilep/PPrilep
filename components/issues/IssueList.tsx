@@ -52,6 +52,9 @@ const CATEGORIES: Array<Category | "all"> = [
   "transport",
   "parking",
   "vehicles",
+  "polluters",
+  "traffic_lights",
+  "traffic_signs",
   "admin",
   "other",
 ];

@@ -57,6 +57,9 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   transport: "Градски превоз",
   parking: "Паркинзи",
   vehicles: "Хаварисани возила",
+  polluters: "Загадувачи",
+  traffic_lights: "Семафори",
+  traffic_signs: "Сообраќајни знаци",
   admin: "Јавна Администрација",
   other: "Друго",
 };
@@ -84,6 +87,9 @@ export function categoryIcon(cat: Category): string {
     transport: "🚌",
     parking: "🅿️",
     vehicles: "🚗",
+    polluters: "🏭",
+    traffic_lights: "🚦",
+    traffic_signs: "🚸",
     admin: "🏛️",
     other: "📋",
   };

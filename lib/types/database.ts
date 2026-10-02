@@ -27,6 +27,9 @@ export type Category =
   | "transport"
   | "parking"
   | "vehicles"
+  | "polluters"
+  | "traffic_lights"
+  | "traffic_signs"
   | "admin"
   | "other";
 export type IssueStatus =

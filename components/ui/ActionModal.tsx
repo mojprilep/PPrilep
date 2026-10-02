@@ -65,6 +65,9 @@ const REPORT_CATEGORIES = [
   "transport",
   "parking",
   "vehicles",
+  "polluters",
+  "traffic_lights",
+  "traffic_signs",
   "admin",
   "other",
 ] as const;
@@ -92,6 +95,9 @@ const CATEGORY_MK: Record<string, string> = {
   transport: "Градски превоз",
   parking: "Паркинзи",
   vehicles: "Хаварисани возила",
+  polluters: "Загадувачи",
+  traffic_lights: "Семафори",
+  traffic_signs: "Сообраќајни знаци",
   admin: "Јавна Администрација",
   other: "Друго",
 };

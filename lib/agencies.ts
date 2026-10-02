@@ -50,6 +50,9 @@ export const AGENCY_BY_CATEGORY: Record<Category, AgencyId> = {
   road: "municipality",
   negligent: "municipality",
   vehicles: "municipality",
+  polluters: "municipality",
+  traffic_lights: "municipality",
+  traffic_signs: "municipality",
   admin: "municipality",
   other: "municipality",
 };

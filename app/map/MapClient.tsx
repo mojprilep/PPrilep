@@ -36,6 +36,9 @@ const CATEGORY_COLORS: Record<Category, string> = {
   transport: "#8b5cf6",
   parking: "#06b6d4",
   vehicles: "#db2777",
+  polluters: "#57534e",
+  traffic_lights: "#dc2626",
+  traffic_signs: "#ca8a04",
   admin: "#6b7280",
   other: "#94a3b8",
 };
