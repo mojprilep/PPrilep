@@ -27,11 +27,18 @@ const MAX_LEN = 7;
 // Parsed lists are cached per length for the lifetime of the (warm) function.
 const cache = new Map<number, string[]>();
 
+const WORDS_DIR = join(process.cwd(), "lib", "zborche", "words");
+
 function wordsForLength(len: number): string[] {
   const hit = cache.get(len);
   if (hit) return hit;
-  const file = join(process.cwd(), "lib", "zborche", "words", `w${len}.json`);
-  const list = JSON.parse(readFileSync(file, "utf8")) as string[];
+  const base = JSON.parse(readFileSync(join(WORDS_DIR, `w${len}.json`), "utf8")) as string[];
+  // extra.json: real words the source dictionary lacks (mostly puzzle answers,
+  // e.g. ЗЕЛНИК) — add to it whenever a scheduled answer isn't in w<len>.json.
+  const extra = (JSON.parse(readFileSync(join(WORDS_DIR, "extra.json"), "utf8")) as string[])
+    .map((w) => w.toUpperCase())
+    .filter((w) => [...w].length === len);
+  const list = [...new Set([...base, ...extra])];
   cache.set(len, list);
   return list;
 }
@@ -53,8 +60,8 @@ export async function GET(request: Request) {
     { len, count: words.length, words },
     {
       headers: {
-        // Immutable per length: cache long at the edge, refresh in the background.
-        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
+        // Changes only on deploy (extra.json): a day at the edge, refresh in the background.
+        "Cache-Control": "public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400",
       },
     },
   );
