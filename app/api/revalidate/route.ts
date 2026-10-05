@@ -10,7 +10,7 @@
  *  2. In Sanity → sanity.io/manage → your project → API → Webhooks:
  *       URL:     https://www.mojprilep.mk/api/revalidate?secret=<your-secret>
  *       Trigger: Create, Update, Delete
- *       Filter:  _type in ["post", "project", "cityEvent", "sportClub", "sportPost"]
+ *       Filter:  _type in ["post", "project", "cityEvent", "sportClub", "sportPost", "sportLeague"]
  *       HTTP method: POST
  */
 
@@ -49,10 +49,11 @@ export async function POST(req: Request) {
       revalidateTag("events", "max");
       revalidatePath("/events", "page");
     }
-    if (!docType || docType === "sportClub" || docType === "sportPost") {
+    if (!docType || docType === "sportClub" || docType === "sportPost" || docType === "sportLeague") {
       revalidateTag("sport", "max");
       revalidatePath("/sport", "page");
       revalidatePath("/sport/[slug]", "page");
+      revalidatePath("/sport/raspored", "page");
     }
 
     // Always revalidate the home page (it may show recent posts/events)
