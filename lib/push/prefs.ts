@@ -6,10 +6,11 @@
 // everything. Senders select `expo_token, notif_prefs` and pass the rows here
 // to get just the tokens that still want `category`.
 
-export type NotifCategory = "games" | "events" | "sport" | "utility" | "parking";
+export type NotifCategory = "chat" | "games" | "events" | "sport" | "utility" | "parking";
 
 /** All categories the mobile panel exposes, in display order. */
 export const NOTIF_CATEGORIES: NotifCategory[] = [
+  "chat",
   "games",
   "events",
   "sport",

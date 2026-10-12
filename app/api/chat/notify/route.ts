@@ -18,6 +18,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { sendExpoPush, type PushMessage } from "../../../../lib/push/expo";
+import { tokensFor } from "../../../../lib/push/prefs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -101,14 +102,15 @@ export async function POST(req: Request) {
 
   const { data: rows, error } = await admin
     .from("push_subscriptions")
-    .select("expo_token")
+    .select("expo_token, notif_prefs")
     .eq("enabled", true)
     .in("user_id", recipients);
   if (error) {
     console.error("[chat/notify] tokens", error);
     return NextResponse.json({ error: "Could not read subscriptions" }, { status: 500 });
   }
-  const tokens = [...new Set((rows ?? []).map((r) => r.expo_token as string).filter(Boolean))];
+  // Devices that switched off "Муабети" in the app's notification panel.
+  const tokens = [...new Set(tokensFor(rows, "chat"))];
   if (tokens.length === 0) {
     return NextResponse.json({ ok: true, sent: 0 });
   }
