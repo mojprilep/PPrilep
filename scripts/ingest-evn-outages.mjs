@@ -20,6 +20,15 @@
 //
 //  We insert directly with the service-role key (NOT create_agency_post), so we
 //  DON'T fan a push notification out to every user for every village outage.
+//  Instead, a NEW outage notifies only the users whose profile street (or
+//  village) appears in its address list — fuzzy-matched by evn-street-match.mjs
+//  — as an `agency_post` notification, which the push_notify webhook delivers
+//  to devices that kept "Комуналии" on. Refreshed (already-seen) outages never
+//  notify again.
+//
+//  EVN's times are Skopje wall-clock with no offset, so this must run with
+//  TZ=Europe/Skopje (the workflow sets it) for ends_at and the "Од … до" text
+//  to be right.
 //
 //  Requires a `source_ref` column on agency_posts (see
 //  supabase/add_agency_post_source_ref.sql) with a unique (agency_id, source_ref).
@@ -32,6 +41,7 @@
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import { matchProfiles } from "./evn-street-match.mjs";
 
 const KEC_PRILEP = 14;
 const SERVICE_URL = "https://portal-api.elektrodistribucija.mk/DSO/Prekini/ZemiPrekini";
@@ -85,6 +95,37 @@ function toPost(o) {
   };
 }
 
+/** Short "13.10 09:00–14:30" (both dates when it spans days) for the push body. */
+function shortWindow(fromIso, toIso) {
+  const a = new Date(fromIso);
+  const b = new Date(toIso);
+  const day = (d) => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`;
+  const time = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return day(a) === day(b)
+    ? `${day(a)} ${time(a)}–${time(b)}`
+    : `${day(a)} ${time(a)} – ${day(b)} ${time(b)}`;
+}
+
+/** Notification rows for one outage: one per matched user (first matching street). */
+function streetNotifications(o, profiles) {
+  const red = (o.tipPrekin || "").toLowerCase().includes("итен");
+  const seen = new Set();
+  const out = [];
+  for (const m of matchProfiles(o.adresa, profiles)) {
+    if (seen.has(m.id)) continue;
+    seen.add(m.id);
+    out.push({
+      recipient_user_id: m.id,
+      actor_user_id: null,
+      type: "agency_post",
+      title: red ? "⚡ Итен прекин на струја на твојата улица" : "⚡ Прекин на струја на твојата улица",
+      body: `${m.segment.replace(/^(ДЕЛ ОД\s+)?(УЛ|БУЛ)\.?\s*/i, "")} · ${shortWindow(o.pocetok, o.kraj)}`,
+      link: `/agency/${AGENCY_ID}`,
+    });
+  }
+  return out;
+}
+
 // ── run ──────────────────────────────────────────────────────────────────────
 const res = await fetch(SERVICE_URL, { headers: { Accept: "application/json" } });
 if (!res.ok) throw new Error(`Source API ${res.status}`);
@@ -106,13 +147,26 @@ for (const p of posts) {
 }
 console.log("──────────────────────────────────────────────\n");
 
-if (!COMMIT) {
-  console.log("DRY RUN — nothing written. Re-run with --commit to publish.\n");
-  process.exit(0);
-}
-
 if (!url || !key) throw new Error("Missing Supabase env vars in .env.local");
 const supabase = createClient(url, key, { auth: { persistSession: false } });
+
+// Everyone with a street on their profile — matched per new outage below.
+const { data: profiles, error: profErr } = await supabase
+  .from("profiles")
+  .select("id, street_name")
+  .not("street_name", "is", null);
+if (profErr) throw profErr;
+
+if (!COMMIT) {
+  for (const o of active) {
+    const n = streetNotifications(o, profiles ?? []);
+    if (n.length) {
+      console.log(`would notify ${n.length} user(s) for ${toPost(o).source_ref}: ${[...new Set(n.map((x) => x.body))].join(" | ")}`);
+    }
+  }
+  console.log("\nDRY RUN — nothing written. Re-run with --commit to publish.\n");
+  process.exit(0);
+}
 
 // Which of these outages are already posted? (dedup on our stable content hash)
 // PostgREST can't upsert onto a *partial* unique index, so we diff by hand:
@@ -132,6 +186,19 @@ const toUpdate = posts.filter((p) => seen.has(p.source_ref));
 if (toInsert.length) {
   const { error } = await supabase.from("agency_posts").insert(toInsert);
   if (error) throw error;
+}
+
+// Street notifications — only for outages we've never seen, so each user hears
+// about a given outage once, however often this runs.
+const newRefs = new Set(toInsert.map((p) => p.source_ref));
+const notifs = active
+  .filter((o) => newRefs.has(sourceRef(o)))
+  .flatMap((o) => streetNotifications(o, profiles ?? []));
+if (notifs.length) {
+  // A failed fan-out must not fail the sync — the posts are already live.
+  const { error } = await supabase.from("notifications").insert(notifs);
+  if (error) console.error("Street notifications failed:", error.message);
+  else console.log(`Notified ${notifs.length} user(s) on affected streets.`);
 }
 for (const p of toUpdate) {
   const { error } = await supabase

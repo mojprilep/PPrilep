@@ -35,6 +35,8 @@ jobs:
 
       - name: Sync КЕЦ Прилеп outages → EVN agency posts
         env:
+          # EVN times are Skopje wall-clock with no offset — parse them as such.
+          TZ: Europe/Skopje
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/ingest-evn-outages.mjs --commit
