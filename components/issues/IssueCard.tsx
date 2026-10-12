@@ -518,10 +518,35 @@ export default function IssueCard({
               )}
             </div>
           ) : (
+            <div className="relative">
+              <BlurImage
+                quality={IMAGE_QUALITY.feed}
+                src={(issue.photo_url ?? issue.after_photo_url)!}
+                alt="Фотографија"
+                width={1600}
+                height={900}
+                loading={eagerImage ? "eager" : "lazy"}
+                priority={eagerImage}
+                sizes="(max-width: 768px) 100vw, 640px"
+                rounded="rounded-none"
+                className="h-[28rem] w-full object-cover lg:h-[34rem]"
+              />
+              {issue.video_url && (
+                <span className="absolute top-2 right-2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white">
+                  ▶ Видео
+                </span>
+              )}
+            </div>
+          ))}
+
+        {/* Video-only report: a play tile instead of an empty card. The clip
+            itself loads only on the issue page, so the feed costs nothing extra. */}
+        {!hasPhoto && issue.video_url && issue.video_poster_url && (
+          <div className="relative">
             <BlurImage
               quality={IMAGE_QUALITY.feed}
-              src={(issue.photo_url ?? issue.after_photo_url)!}
-              alt="Фотографија"
+              src={issue.video_poster_url}
+              alt="Видео"
               width={1600}
               height={900}
               loading={eagerImage ? "eager" : "lazy"}
@@ -530,10 +555,24 @@ export default function IssueCard({
               rounded="rounded-none"
               className="h-[28rem] w-full object-cover lg:h-[34rem]"
             />
-          ))}
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-black/45 pl-1 text-2xl text-white">
+                ▶
+              </span>
+            </span>
+          </div>
+        )}
+        {!hasPhoto && issue.video_url && !issue.video_poster_url && (
+          <div className="flex h-56 w-full flex-col items-center justify-center gap-2.5 bg-zinc-900 text-white">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 pl-1 text-2xl">
+              ▶
+            </span>
+            <span className="text-sm font-semibold">Погледни го видеото</span>
+          </div>
+        )}
 
         {/* ── Title ──────────────────────────────────────── */}
-        <div className={cn("px-4", hasPhoto ? "pt-3 pb-1" : "pt-2 pb-1")}>
+        <div className={cn("px-4", hasPhoto || issue.video_url ? "pt-3 pb-1" : "pt-2 pb-1")}>
           <p className="text-base font-semibold text-zinc-800 line-clamp-2 leading-snug lg:text-lg">
             {issue.title}
           </p>

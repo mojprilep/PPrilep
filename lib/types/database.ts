@@ -100,6 +100,9 @@ export interface Issue {
   status: IssueStatus;
   photo_url: string | null;
   after_photo_url?: string | null;
+  /** Optional ≤30s report video (supabase/add_issue_video.sql). */
+  video_url?: string | null;
+  video_poster_url?: string | null;
   lat?: number | null;
   lng?: number | null;
   reported_by: string | null;

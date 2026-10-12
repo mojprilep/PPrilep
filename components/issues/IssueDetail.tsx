@@ -2907,6 +2907,18 @@ export default function IssueDetail({
             </button>
           ))}
 
+        {/* Report video — metadata only until played, so opening an issue stays cheap. */}
+        {currentIssue.video_url && (
+          <video
+            src={`${currentIssue.video_url}#t=0.1`}
+            poster={currentIssue.video_poster_url ?? undefined}
+            controls
+            playsInline
+            preload="metadata"
+            className="w-full max-h-112 rounded-lg border border-zinc-200 bg-black"
+          />
+        )}
+
         {/* Counts row — same layout as IssueCard */}
         <div className="flex items-center gap-3 lg:gap-4">
           {/* Помогни */}
