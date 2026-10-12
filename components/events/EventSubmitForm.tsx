@@ -270,11 +270,11 @@ export default function EventSubmitForm({ onCancel, onClose, userEmail, userName
                 <label className="text-xs font-medium text-zinc-700">
                   Опис <span className="font-normal text-zinc-400">(незадолжително)</span>
                 </label>
-                <span className="ml-auto text-[10px] text-zinc-400">{description.length} / 1000</span>
+                <span className="ml-auto text-[10px] text-zinc-400">{description.length} / 2000</span>
               </div>
               <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value.slice(0, 1000))}
+                onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
                 placeholder="Што се случува? Кој настапува? Влез, цени, детали…"
                 rows={5}
                 className={cn(inputCls, "resize-none")}

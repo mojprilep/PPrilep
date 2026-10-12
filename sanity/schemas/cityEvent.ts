@@ -78,7 +78,7 @@ export default defineType({
       title: "Краток опис",
       type: "text",
       rows: 4,
-      validation: (r) => r.max(1000),
+      validation: (r) => r.max(2000),
     }),
     defineField({
       name: "coverImage",

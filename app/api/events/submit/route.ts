@@ -42,7 +42,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 // ── Abuse guards ──────────────────────────────────────────────────────────────
 const MAX_TITLE     = 140;
-const MAX_DESC      = 1000;
+const MAX_DESC      = 2000;
 const MAX_FIELD     = 200;
 const MAX_IMG_BYTES = 8 * 1024 * 1024; // 8 MB
 
