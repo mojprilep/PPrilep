@@ -1,12 +1,12 @@
 // POST /api/chat/notify
 //
-// Push for new group-chat messages. Called by a Supabase **Database Webhook**
-// on INSERT into public.chat_messages (schema: supabase/add_chat.sql).
-//
-// Supabase Database Webhook setup (user, one-time):
-//   Table: public.chat_messages · Events: INSERT · Type: HTTP Request
-//   URL: https://www.mojprilep.mk/api/chat/notify
-//   HTTP header:  x-webhook-secret: <CRON_SECRET>
+// Push for new group-chat messages. Two callers:
+//   - the app, right after it sends a message: `Authorization: Bearer <user JWT>`
+//     + `{ messageId }`. Only the message's own author, only within a few
+//     minutes of sending. This is the live path (since 2026-10-13).
+//   - a Supabase Database Webhook (`x-webhook-secret: <CRON_SECRET>` +
+//     `{ record }`). It was never firing in prod; DON'T create one now, or every
+//     message pushes twice.
 //
 // Chat messages deliberately do NOT become `notifications` rows: a busy group
 // would bury the civic feed. They only push, and only to members who:
@@ -19,11 +19,14 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { sendExpoPush, type PushMessage } from "../../../../lib/push/expo";
 import { tokensFor } from "../../../../lib/push/prefs";
+import { getRequestUser } from "../../../../lib/supabase/request-user";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const THROTTLE_MS = 2 * 60_000;
+// The app only asks for a push right after sending; older ids are replays.
+const APP_TRIGGER_MAX_AGE_MS = 5 * 60_000;
 
 type MessageRecord = {
   id?: number;
@@ -36,23 +39,39 @@ type MessageRecord = {
 
 export async function POST(req: Request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 500 });
-  }
-  const provided =
-    req.headers.get("x-webhook-secret") ??
-    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (provided !== secret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const provided = req.headers.get("x-webhook-secret");
+  const body = (await req.json().catch(() => ({}))) as {
+    record?: MessageRecord;
+    messageId?: number;
+  };
+  const admin = createAdminClient();
+
+  let rec: MessageRecord | undefined;
+  if (secret && provided === secret) {
+    rec = body.record;
+  } else {
+    const user = await getRequestUser(req);
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (typeof body.messageId !== "number") {
+      return NextResponse.json({ error: "messageId required" }, { status: 400 });
+    }
+    const { data } = await admin
+      .from("chat_messages")
+      .select("id, group_id, user_id, body, image_url, created_at")
+      .eq("id", body.messageId)
+      .maybeSingle();
+    if (!data || data.user_id !== user.id) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if (Date.now() - new Date(data.created_at as string).getTime() > APP_TRIGGER_MAX_AGE_MS) {
+      return NextResponse.json({ ok: true, skipped: "stale" });
+    }
+    rec = data as MessageRecord;
   }
 
-  const payload = (await req.json().catch(() => ({}))) as { record?: MessageRecord };
-  const rec = payload.record;
   if (!rec?.id || !rec.group_id || !rec.user_id) {
     return NextResponse.json({ ok: true, skipped: "bad record" });
   }
-
-  const admin = createAdminClient();
 
   const [{ data: group }, { data: sender }, { data: prev }, { data: members }] = await Promise.all([
     admin.from("chat_groups").select("name").eq("id", rec.group_id).maybeSingle(),
