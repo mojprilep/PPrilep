@@ -380,17 +380,29 @@ export type LeagueRound = {
   matches: LeagueMatch[];
 };
 
+export type LeagueSport = "football" | "handball";
+
 export type SportLeague = {
   _id: string;
   title: string;
   season: string | null;
   part: string | null;
+  sport: LeagueSport;
+  /** Team name to highlight (exactly as written in the matches), if any. */
+  ourTeam: string | null;
   rounds: LeagueRound[];
 };
 
+/** Points for a win — football 3, handball 2. A draw is 1 in both. */
+export function winPointsFor(sport: LeagueSport): number {
+  return sport === "handball" ? 2 : 3;
+}
+
+// Leagues written before the `sport` field existed are football.
 const LEAGUE_QUERY = `
-  *[_type == "sportLeague" && active == true] | order(_updatedAt desc)[0]{
-    _id, title, season, part,
+  *[_type == "sportLeague" && active == true && coalesce(sport, "football") == $sport]
+    | order(_updatedAt desc)[0]{
+    _id, title, season, part, "sport": coalesce(sport, "football"), ourTeam,
     rounds[]{
       number, date, dateLabel,
       matches[]{ home, away, homeScore, awayScore }
@@ -398,9 +410,9 @@ const LEAGUE_QUERY = `
   }
 `;
 
-/** The one active league's fixtures, rounds sorted by round number. */
-export async function fetchActiveLeague(): Promise<SportLeague | null> {
-  const league = await sanityClient.fetch<SportLeague | null>(LEAGUE_QUERY, {}, SPORT_CACHE);
+/** The active league for a sport, rounds sorted by round number. */
+export async function fetchActiveLeague(sport: LeagueSport = "football"): Promise<SportLeague | null> {
+  const league = await sanityClient.fetch<SportLeague | null>(LEAGUE_QUERY, { sport }, SPORT_CACHE);
   if (!league) return null;
   const rounds = [...(league.rounds ?? [])].sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
   return { ...league, rounds };
@@ -444,12 +456,13 @@ export type StandingRow = {
 };
 
 /**
- * League table built purely from played matches (both scores filled). Win = 3,
- * draw = 1. Every team that appears in any fixture gets a row, so the table is
- * complete from round 1 even before a club has kicked a ball. Sorted the usual
+ * League table built purely from played matches (both scores filled). Win =
+ * `winPoints` (3 football, 2 handball), draw = 1. Every team that appears in
+ * any fixture gets a row, so the table is complete from round 1 even before a
+ * club has kicked a ball. Sorted the usual
  * way: points, then goal difference, then goals scored, then name.
  */
-export function computeStandings(rounds: LeagueRound[]): StandingRow[] {
+export function computeStandings(rounds: LeagueRound[], winPoints = 3): StandingRow[] {
   const table = new Map<string, StandingRow>();
   const row = (team: string): StandingRow => {
     let r = table.get(team);
@@ -488,10 +501,10 @@ export function computeStandings(rounds: LeagueRound[]): StandingRow[] {
       away.goalsAgainst += hs;
 
       if (hs > as) {
-        home.won++; home.points += 3; home.form.push("W");
+        home.won++; home.points += winPoints; home.form.push("W");
         away.lost++; away.form.push("L");
       } else if (hs < as) {
-        away.won++; away.points += 3; away.form.push("W");
+        away.won++; away.points += winPoints; away.form.push("W");
         home.lost++; home.form.push("L");
       } else {
         home.drawn++; home.points++; home.form.push("D");

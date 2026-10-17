@@ -1,7 +1,8 @@
 /**
- * Распоред — the active league's fixtures.
+ * Распоред — the active football league's fixtures.
  *
- * One league at a time (admin flips `active` in Studio). Rounds already played
+ * One league per sport (admin flips `active` in Studio); handball lives at
+ * /sport/rakomet and shares LeagueView. Rounds already played
  * show results; the next un-played round is highlighted at the top so a reader
  * lands straight on "when's the next match".
  */
@@ -10,7 +11,7 @@ import type { Metadata } from "next";
 import Link from "@/components/ui/Link";
 import { ArrowLeft } from "lucide-react";
 
-import { computeStandings, fetchActiveLeague } from "../../../../lib/sanity/sport";
+import { computeStandings, fetchActiveLeague, winPointsFor } from "../../../../lib/sanity/sport";
 import LeagueView from "./LeagueView";
 
 export const revalidate = 3600;
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RasporedPage() {
-  const league = await fetchActiveLeague();
+  const league = await fetchActiveLeague("football");
 
   return (
     <div className="space-y-6">
@@ -46,7 +47,7 @@ export default async function RasporedPage() {
           Распоредот сè уште не е објавен.
         </p>
       ) : (
-        <LeagueView league={league} standings={computeStandings(league.rounds)} />
+        <LeagueView league={league} standings={computeStandings(league.rounds, winPointsFor(league.sport))} />
       )}
     </div>
   );

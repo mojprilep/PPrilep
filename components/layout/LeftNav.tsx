@@ -27,6 +27,7 @@ import {
   faBusSimple,
   faPersonRunning,
   faFutbol,
+  faVolleyball,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Map } from "lucide-react";
@@ -374,6 +375,12 @@ export default function LeftNav() {
               href="/sport/raspored"
               label="Лига регион 4"
               iconNode={<FontAwesomeIcon icon={faFutbol} className="h-4 w-4" />}
+              iconTone="orange"
+            />
+            <LeftNavItem
+              href="/sport/rakomet"
+              label="Ракомет — Супер лига"
+              iconNode={<FontAwesomeIcon icon={faVolleyball} className="h-4 w-4" />}
               iconTone="orange"
             />
           </div>

@@ -4,7 +4,8 @@
  * Client view for the active league: a Распоред / Таблица toggle over data the
  * server already fetched. Fixtures use a stacked two-row layout (time on the
  * left, the pairing in the middle, the score on the right); the table is the
- * usual league standings computed from played results.
+ * usual league standings computed from played results. The league's `ourTeam`
+ * (e.g. ПРИЛЕП) is picked out in teal in both views.
  */
 
 import { useState } from "react";
@@ -37,7 +38,12 @@ function splitDate(round: LeagueRound): { day: string; time: string } {
   }
 }
 
-function MatchRow({ match }: { match: LeagueMatch }) {
+function teamClass(lost: boolean, ours: boolean): string {
+  if (ours) return lost ? "font-semibold text-teal-700/60" : "font-semibold text-teal-700";
+  return lost ? "text-theme-muted" : "text-theme-heading";
+}
+
+function MatchRow({ match, ourTeam }: { match: LeagueMatch; ourTeam: string | null }) {
   const played = isMatchPlayed(match);
   // Dim the loser of a played match so the winner stays prominent and you can
   // read who won at a glance. A draw keeps both sides prominent.
@@ -46,10 +52,10 @@ function MatchRow({ match }: { match: LeagueMatch }) {
   return (
     <div className="flex items-stretch gap-3 py-2">
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className={`truncate text-sm ${homeLost ? "text-theme-muted" : "text-theme-heading"}`}>
+        <div className={`truncate text-sm ${teamClass(homeLost, match.home === ourTeam)}`}>
           {match.home}
         </div>
-        <div className={`truncate text-sm ${awayLost ? "text-theme-muted" : "text-theme-heading"}`}>
+        <div className={`truncate text-sm ${teamClass(awayLost, match.away === ourTeam)}`}>
           {match.away}
         </div>
       </div>
@@ -65,7 +71,15 @@ function MatchRow({ match }: { match: LeagueMatch }) {
   );
 }
 
-function RoundBlock({ round, highlight }: { round: LeagueRound; highlight: boolean }) {
+function RoundBlock({
+  round,
+  highlight,
+  ourTeam,
+}: {
+  round: LeagueRound;
+  highlight: boolean;
+  ourTeam: string | null;
+}) {
   const played = isRoundPlayed(round);
   const { day } = splitDate(round);
   // Only the current/next round starts open; every other round collapses so the
@@ -106,7 +120,7 @@ function RoundBlock({ round, highlight }: { round: LeagueRound; highlight: boole
       {open ? (
         <div className="divide-y divide-zinc-100 px-4">
           {(round.matches ?? []).map((m, i) => (
-            <MatchRow key={i} match={m} />
+            <MatchRow key={i} match={m} ourTeam={ourTeam} />
           ))}
         </div>
       ) : null}
@@ -114,12 +128,12 @@ function RoundBlock({ round, highlight }: { round: LeagueRound; highlight: boole
   );
 }
 
-function Fixtures({ rounds }: { rounds: LeagueRound[] }) {
+function Fixtures({ rounds, ourTeam }: { rounds: LeagueRound[]; ourTeam: string | null }) {
   const next = nextRoundIndex(rounds);
   return (
     <div className="space-y-3">
       {rounds.map((round, i) => (
-        <RoundBlock key={round.number ?? i} round={round} highlight={i === next} />
+        <RoundBlock key={round.number ?? i} round={round} highlight={i === next} ourTeam={ourTeam} />
       ))}
     </div>
   );
@@ -132,7 +146,7 @@ const FORM_STYLE: Record<"W" | "D" | "L", string> = {
 };
 const FORM_LABEL: Record<"W" | "D" | "L", string> = { W: "П", D: "Н", L: "И" };
 
-function StandingsTable({ rows }: { rows: StandingRow[] }) {
+function StandingsTable({ rows, ourTeam }: { rows: StandingRow[]; ourTeam: string | null }) {
   return (
     <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
       <table className="w-full border-collapse text-sm">
@@ -151,9 +165,16 @@ function StandingsTable({ rows }: { rows: StandingRow[] }) {
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={r.team} className="border-b border-zinc-50 last:border-0">
+            <tr
+              key={r.team}
+              className={`border-b border-zinc-50 last:border-0 ${r.team === ourTeam ? "bg-teal-50" : ""}`}
+            >
               <td className="px-2 py-2 text-left tabular-nums text-theme-muted">{i + 1}</td>
-              <td className="py-2 pl-1 pr-2 font-medium text-theme-heading">{r.team}</td>
+              <td
+                className={`py-2 pl-1 pr-2 ${r.team === ourTeam ? "font-bold text-teal-700" : "font-medium text-theme-heading"}`}
+              >
+                {r.team}
+              </td>
               <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.played}</td>
               <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.won}</td>
               <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.drawn}</td>
@@ -221,9 +242,9 @@ export default function LeagueView({
       </div>
 
       {tab === "fixtures" ? (
-        <Fixtures rounds={league.rounds} />
+        <Fixtures rounds={league.rounds} ourTeam={league.ourTeam} />
       ) : (
-        <StandingsTable rows={standings} />
+        <StandingsTable rows={standings} ourTeam={league.ourTeam} />
       )}
     </div>
   );

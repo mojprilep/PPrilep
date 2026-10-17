@@ -140,7 +140,7 @@ export const structure: StructureResolver = (S) =>
               S.divider(),
               S.documentTypeListItem("sportClub").title("Клубови"),
               S.documentTypeListItem("sportPost").title("Новости од клубовите"),
-              S.documentTypeListItem("sportLeague").title("⚽ Лига (Распоред)"),
+              S.documentTypeListItem("sportLeague").title("⚽🤾 Лиги (Распоред)"),
             ]),
         ),
 

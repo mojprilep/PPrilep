@@ -25,6 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/sport", changeFrequency: "weekly", priority: 0.6 },
     { path: "/sport/ce-trcame", changeFrequency: "weekly", priority: 0.6 },
     { path: "/sport/raspored", changeFrequency: "daily", priority: 0.6 },
+    { path: "/sport/rakomet", changeFrequency: "daily", priority: 0.6 },
     { path: "/projects", changeFrequency: "weekly", priority: 0.6 },
     { path: "/about", changeFrequency: "monthly", priority: 0.5 },
     { path: "/sponsors", changeFrequency: "monthly", priority: 0.5 },

@@ -54,6 +54,7 @@ export async function POST(req: Request) {
       revalidatePath("/sport", "page");
       revalidatePath("/sport/[slug]", "page");
       revalidatePath("/sport/raspored", "page");
+      revalidatePath("/sport/rakomet", "page");
     }
 
     // Always revalidate the home page (it may show recent posts/events)

@@ -9,8 +9,10 @@ import { defineField, defineType } from "sanity";
  * upcoming round and the past results.
  *
  * `active` is the visibility switch — the web and the app show the one active
- * league. Keep exactly one active at a time; flip the old one off when a new
- * season starts (the finished one stays in Studio as an archive).
+ * league PER SPORT (`sport`: football → /sport/raspored, handball →
+ * /sport/rakomet). Keep one active per sport; flip the old one off when a new
+ * season starts (the finished one stays in Studio as an archive). The sport
+ * also sets the points for a win (football 3, handball 2).
  *
  * A match counts as PLAYED when BOTH scores are filled in; leave them empty for
  * an upcoming fixture. There is no separate "played" flag to keep in sync.
@@ -42,11 +44,32 @@ export default defineType({
       validation: (Rule) => Rule.max(40),
     }),
     defineField({
+      name: "sport",
+      title: "Спорт",
+      type: "string",
+      description: "Фудбал = 3 бода за победа, ракомет = 2. Празно се смета за фудбал.",
+      options: {
+        list: [
+          { title: "Фудбал", value: "football" },
+          { title: "Ракомет", value: "handball" },
+        ],
+        layout: "radio",
+        direction: "horizontal",
+      },
+      initialValue: "football",
+    }),
+    defineField({
+      name: "ourTeam",
+      title: "Нашиот тим",
+      type: "string",
+      description: "Опционално — точно како во натпреварите (пр. ПРИЛЕП). Се истакнува во распоредот и табелата.",
+    }),
+    defineField({
       name: "active",
       title: "Активна",
       type: "boolean",
       description:
-        "Само активната лига се прикажува на сајтот и во апликацијата. Држи само една активна.",
+        "Само активната лига се прикажува на сајтот и во апликацијата. Држи само една активна по спорт.",
       initialValue: true,
     }),
     defineField({
@@ -90,8 +113,8 @@ export default defineType({
                   fields: [
                     { name: "home", title: "Домаќин", type: "string", validation: (Rule) => Rule.required() },
                     { name: "away", title: "Гостин", type: "string", validation: (Rule) => Rule.required() },
-                    { name: "homeScore", title: "Голови (домаќин)", type: "number", validation: (Rule) => Rule.min(0).integer() },
-                    { name: "awayScore", title: "Голови (гостин)", type: "number", validation: (Rule) => Rule.min(0).integer() },
+                    { name: "homeScore", title: "Резултат (домаќин)", type: "number", validation: (Rule) => Rule.min(0).integer() },
+                    { name: "awayScore", title: "Резултат (гостин)", type: "number", validation: (Rule) => Rule.min(0).integer() },
                   ],
                   preview: {
                     select: { home: "home", away: "away", hs: "homeScore", as: "awayScore" },
@@ -118,11 +141,11 @@ export default defineType({
     }),
   ],
   preview: {
-    select: { title: "title", season: "season", part: "part", active: "active" },
-    prepare({ title, season, part, active }) {
+    select: { title: "title", season: "season", part: "part", active: "active", sport: "sport" },
+    prepare({ title, season, part, active, sport }) {
       return {
         title: `${active ? "🟢 " : ""}${title ?? "Лига"}`,
-        subtitle: [season, part].filter(Boolean).join(" · "),
+        subtitle: [sport === "handball" ? "Ракомет" : "Фудбал", season, part].filter(Boolean).join(" · "),
       };
     },
   },
