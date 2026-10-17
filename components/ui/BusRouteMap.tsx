@@ -200,16 +200,17 @@ function aroundStops(
   return forward ? { prev: lower, next: upper } : { prev: upper, next: lower };
 }
 
-// Trackers only report every ~30s, so polling faster just multiplies origin
-// requests for no fresher data. Cadence adapts to what's actually happening:
-//  • ACTIVE  — buses on the map: 30s (matches the endpoint's s-maxage=30).
+// Trackers report every ~3-30s and the endpoint is edge-cached for 5s, so
+// polling much faster than 10s buys nothing. All viewers share the cached copy,
+// so a shorter poll costs edge hits, not origin runs. Cadence adapts:
+//  • ACTIVE  — buses on the map: 10s.
 //  • QUIET   — no buses, but within ENGINE_OFF_GRACE of the last one going
 //              offline: 60s, staying attentive in case one's still finishing up.
 //  • DORMANT — engines have been off for >15 min (end of service), or none seen
 //              yet: a slow 5-min heartbeat, just enough to notice buses returning
 //              (or the first one of the day) without spending requests all evening.
 // Off-hours fetches are skipped entirely, so those ticks cost nothing.
-const ACTIVE_POLL_MS = 30_000;
+const ACTIVE_POLL_MS = 10_000;
 const QUIET_POLL_MS = 60_000;
 const DORMANT_POLL_MS = 5 * 60_000;
 // End active fetching this long after the last bus turns off its engine (goes

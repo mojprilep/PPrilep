@@ -42,19 +42,21 @@ const TOKEN = process.env.FLESPI_TOKEN;
 const MAX_AGE_S = 15 * 60;
 
 const CACHE_HEADERS = {
-  // 10s shared cache: the fleet's fastest tracker emits a new fix every ~2-3s, so
-  // a 10s window keeps positions fresh while still collapsing all viewers into
-  // ~one origin run per window. BOTH the web map and the mobile app poll this
+  // 5s shared cache, NO stale-while-revalidate: the fleet's fastest tracker emits
+  // a new fix every ~2-3s. Vercel AND Cloudflare both cache this response, and
+  // with SWR each layer could hand out a copy up to 30s old — stacked, viewers
+  // saw positions 20-40s behind. 5s still collapses all viewers into ~one
+  // origin run per window. BOTH the web map and the mobile app poll this
   // through the Cloudflare-proxied host buses.mojprilep.mk.
   //
-  // `max-age=10` on top of s-maxage is a defence-in-depth against Cloudflare's
+  // `max-age=5` on top of s-maxage is a defence-in-depth against Cloudflare's
   // default Browser Cache TTL (4h) rewriting the wire response to
   // `max-age=14400` when a Cache Rule isn't in place — that once left the mobile
   // app showing frozen bus positions for 4h at a time. Also emit
   // `CDN-Cache-Control` (Cloudflare-specific; overrides Cache-Control at the
-  // edge) so the 10s edge TTL is enforced regardless of dashboard config.
-  "Cache-Control": "public, max-age=10, s-maxage=10, stale-while-revalidate=20",
-  "CDN-Cache-Control": "public, s-maxage=10, stale-while-revalidate=20",
+  // edge) so the 5s edge TTL is enforced regardless of dashboard config.
+  "Cache-Control": "public, max-age=5, s-maxage=5",
+  "CDN-Cache-Control": "public, s-maxage=5",
   // Public, non-sensitive data. The web map runs on www.mojprilep.mk but fetches
   // this from the buses.mojprilep.mk cache host — a cross-origin GET — so the
   // browser needs this to read the response. Simple GET, no preflight.
