@@ -451,8 +451,18 @@ export type StandingRow = {
   goalsAgainst: number;
   goalDiff: number;
   points: number;
-  /** Oldest → newest, one per played match: "W" | "D" | "L". */
-  form: ("W" | "D" | "L")[];
+  /** Oldest → newest, one per played match. */
+  form: FormEntry[];
+};
+
+/** One played match from a team's point of view, for the form strip. */
+export type FormEntry = {
+  result: "W" | "D" | "L";
+  round: number | null;
+  home: string;
+  away: string;
+  homeScore: number;
+  awayScore: number;
 };
 
 /**
@@ -500,15 +510,23 @@ export function computeStandings(rounds: LeagueRound[], winPoints = 3): Standing
       away.goalsFor += as;
       away.goalsAgainst += hs;
 
+      const entry = (result: FormEntry["result"]): FormEntry => ({
+        result,
+        round: round.number ?? null,
+        home: m.home,
+        away: m.away,
+        homeScore: hs,
+        awayScore: as,
+      });
       if (hs > as) {
-        home.won++; home.points += winPoints; home.form.push("W");
-        away.lost++; away.form.push("L");
+        home.won++; home.points += winPoints; home.form.push(entry("W"));
+        away.lost++; away.form.push(entry("L"));
       } else if (hs < as) {
-        away.won++; away.points += winPoints; away.form.push("W");
-        home.lost++; home.form.push("L");
+        away.won++; away.points += winPoints; away.form.push(entry("W"));
+        home.lost++; home.form.push(entry("L"));
       } else {
-        home.drawn++; home.points++; home.form.push("D");
-        away.drawn++; away.points++; away.form.push("D");
+        home.drawn++; home.points++; home.form.push(entry("D"));
+        away.drawn++; away.points++; away.form.push(entry("D"));
       }
     }
   }

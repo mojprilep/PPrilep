@@ -7,8 +7,7 @@
  */
 
 import type { Metadata } from "next";
-import Link from "@/components/ui/Link";
-import { ChevronRight, Footprints, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import SportDirectory from "../../../components/sport/SportDirectory";
 import SubmitClubButton from "../../../components/sport/SubmitClubButton";
@@ -62,21 +61,6 @@ export default async function SportPage() {
 
       {/* The football league (Трета Лига Југ) is football-only, so it lives in
           the left-side menu under Спорт, not on this general club directory. */}
-
-      {/* Local road race — informational page with apply links to the organiser. */}
-      <Link
-        href="/sport/ce-trcame"
-        className="flex w-full items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 text-left transition-colors hover:bg-zinc-50"
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-700">
-          <Footprints className="h-4 w-4" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-theme-heading">Че Трчаме 2026</p>
-          <p className="text-xs text-theme-muted">Трка на 5 и 10 км · 18 октомври · пријави се</p>
-        </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-theme-muted" />
-      </Link>
 
       {clubs.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-zinc-200 p-6 text-center text-sm text-theme-muted">

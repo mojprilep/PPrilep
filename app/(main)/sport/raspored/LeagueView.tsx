@@ -8,7 +8,7 @@
  * (e.g. ПРИЛЕП) is picked out in teal in both views.
  */
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import {
@@ -16,6 +16,7 @@ import {
   isRoundPlayed,
   nextRoundIndex,
   type LeagueMatch,
+  type FormEntry,
   type LeagueRound,
   type SportLeague,
   type StandingRow,
@@ -30,7 +31,10 @@ function splitDate(round: LeagueRound): { day: string; time: string } {
   try {
     const d = new Date(round.date);
     return {
-      day: new Intl.DateTimeFormat("mk-MK", { day: "2-digit", month: "2-digit" }).format(d),
+      day: new Intl.DateTimeFormat("mk-MK", {
+        day: "2-digit",
+        month: "2-digit",
+      }).format(d),
       time: "",
     };
   } catch {
@@ -39,11 +43,20 @@ function splitDate(round: LeagueRound): { day: string; time: string } {
 }
 
 function teamClass(lost: boolean, ours: boolean): string {
-  if (ours) return lost ? "font-semibold text-teal-700/60" : "font-semibold text-teal-700";
+  if (ours)
+    return lost
+      ? "font-semibold text-teal-700/60"
+      : "font-semibold text-teal-700";
   return lost ? "text-theme-muted" : "text-theme-heading";
 }
 
-function MatchRow({ match, ourTeam }: { match: LeagueMatch; ourTeam: string | null }) {
+function MatchRow({
+  match,
+  ourTeam,
+}: {
+  match: LeagueMatch;
+  ourTeam: string | null;
+}) {
   const played = isMatchPlayed(match);
   // Dim the loser of a played match so the winner stays prominent and you can
   // read who won at a glance. A draw keeps both sides prominent.
@@ -52,18 +65,30 @@ function MatchRow({ match, ourTeam }: { match: LeagueMatch; ourTeam: string | nu
   return (
     <div className="flex items-stretch gap-3 py-2">
       <div className="min-w-0 flex-1 space-y-1.5">
-        <div className={`truncate text-sm ${teamClass(homeLost, match.home === ourTeam)}`}>
+        <div
+          className={`truncate text-sm ${teamClass(homeLost, match.home === ourTeam)}`}
+        >
           {match.home}
         </div>
-        <div className={`truncate text-sm ${teamClass(awayLost, match.away === ourTeam)}`}>
+        <div
+          className={`truncate text-sm ${teamClass(awayLost, match.away === ourTeam)}`}
+        >
           {match.away}
         </div>
       </div>
       <div className="flex flex-col items-end justify-center gap-1.5 text-sm font-bold tabular-nums">
-        <span className={!played || homeLost ? "text-theme-muted" : "text-theme-heading"}>
+        <span
+          className={
+            !played || homeLost ? "text-theme-muted" : "text-theme-heading"
+          }
+        >
           {played ? match.homeScore : "-"}
         </span>
-        <span className={!played || awayLost ? "text-theme-muted" : "text-theme-heading"}>
+        <span
+          className={
+            !played || awayLost ? "text-theme-muted" : "text-theme-heading"
+          }
+        >
           {played ? match.awayScore : "-"}
         </span>
       </div>
@@ -128,12 +153,23 @@ function RoundBlock({
   );
 }
 
-function Fixtures({ rounds, ourTeam }: { rounds: LeagueRound[]; ourTeam: string | null }) {
+function Fixtures({
+  rounds,
+  ourTeam,
+}: {
+  rounds: LeagueRound[];
+  ourTeam: string | null;
+}) {
   const next = nextRoundIndex(rounds);
   return (
     <div className="space-y-3">
       {rounds.map((round, i) => (
-        <RoundBlock key={round.number ?? i} round={round} highlight={i === next} ourTeam={ourTeam} />
+        <RoundBlock
+          key={round.number ?? i}
+          round={round}
+          highlight={i === next}
+          ourTeam={ourTeam}
+        />
       ))}
     </div>
   );
@@ -146,7 +182,21 @@ const FORM_STYLE: Record<"W" | "D" | "L", string> = {
 };
 const FORM_LABEL: Record<"W" | "D" | "L", string> = { W: "П", D: "Н", L: "И" };
 
-function StandingsTable({ rows, ourTeam }: { rows: StandingRow[]; ourTeam: string | null }) {
+function formText(e: FormEntry): string {
+  const round = e.round != null ? `${e.round}. коло · ` : "";
+  return `${round}${e.home} ${e.homeScore} : ${e.awayScore} ${e.away}`;
+}
+
+function StandingsTable({
+  rows,
+  ourTeam,
+}: {
+  rows: StandingRow[];
+  ourTeam: string | null;
+}) {
+  // Tapped form box ("team|index") — hover shows a tooltip on desktop, but
+  // phones have no hover, so a tap opens the match under that team's row.
+  const [picked, setPicked] = useState<string | null>(null);
   return (
     <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
       <table className="w-full border-collapse text-sm">
@@ -154,54 +204,146 @@ function StandingsTable({ rows, ourTeam }: { rows: StandingRow[]; ourTeam: strin
           <tr className="border-b border-zinc-100 text-[11px] uppercase tracking-wide text-theme-muted">
             <th className="px-2 py-2 text-left font-semibold">#</th>
             <th className="py-2 pl-1 pr-2 text-left font-semibold">Тим</th>
-            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Одиграни">О</th>
-            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Победа">П</th>
-            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Нерешено">Н</th>
-            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Изгубено">И</th>
-            <th className="cursor-help px-1.5 py-2 text-center font-semibold" title="Гол разлика">ГР</th>
-            <th className="cursor-help px-1.5 py-2 text-center font-bold text-theme-heading" title="Бодови">Б</th>
-            <th className="hidden px-2 py-2 text-left font-semibold sm:table-cell">Форма</th>
+            <th
+              className="cursor-help px-1.5 py-2 text-center font-semibold"
+              title="Одиграни"
+            >
+              О
+            </th>
+            <th
+              className="cursor-help px-1.5 py-2 text-center font-semibold"
+              title="Победа"
+            >
+              П
+            </th>
+            <th
+              className="cursor-help px-1.5 py-2 text-center font-semibold"
+              title="Нерешено"
+            >
+              Н
+            </th>
+            <th
+              className="cursor-help px-1.5 py-2 text-center font-semibold"
+              title="Изгубено"
+            >
+              И
+            </th>
+            <th
+              className="cursor-help px-1.5 py-2 text-center font-semibold"
+              title="Гол разлика"
+            >
+              ГР
+            </th>
+            <th
+              className="cursor-help px-1.5 py-2 text-center font-bold text-theme-heading"
+              title="Бодови"
+            >
+              Б
+            </th>
+            <th className="px-2 py-2 text-left font-semibold">Форма</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
-            <tr
-              key={r.team}
-              className={`border-b border-zinc-50 last:border-0 ${r.team === ourTeam ? "bg-teal-50" : ""}`}
-            >
-              <td className="px-2 py-2 text-left tabular-nums text-theme-muted">{i + 1}</td>
-              <td
-                className={`py-2 pl-1 pr-2 ${r.team === ourTeam ? "font-bold text-teal-700" : "font-medium text-theme-heading"}`}
-              >
-                {r.team}
-              </td>
-              <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.played}</td>
-              <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.won}</td>
-              <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.drawn}</td>
-              <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">{r.lost}</td>
-              <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
-                {r.goalDiff > 0 ? `+${r.goalDiff}` : r.goalDiff}
-              </td>
-              <td className="px-1.5 py-2 text-center font-bold tabular-nums text-theme-heading">
-                {r.points}
-              </td>
-              <td className="hidden px-2 py-2 sm:table-cell">
-                <div className="flex gap-1">
-                  {/* Newest first (leftmost) — that's how fans read a form strip;
+          {rows.map((r, i) => {
+            const recent = r.form.slice(-5).reverse();
+            const pickedIdx = picked?.startsWith(`${r.team}|`)
+              ? Number(picked.slice(r.team.length + 1))
+              : -1;
+            const pickedEntry = recent[pickedIdx];
+            return (
+              <Fragment key={r.team}>
+                <tr
+                  className={`border-b border-zinc-50 last:border-0 ${r.team === ourTeam ? "bg-teal-50" : ""}`}
+                >
+                  <td className="px-2 py-2 text-left tabular-nums text-theme-muted">
+                    {i + 1}
+                  </td>
+                  <td
+                    className={`py-2 pl-1 pr-2 ${r.team === ourTeam ? "font-bold text-teal-700" : "font-medium text-theme-heading"}`}
+                  >
+                    {r.team}
+                  </td>
+                  <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
+                    {r.played}
+                  </td>
+                  <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
+                    {r.won}
+                  </td>
+                  <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
+                    {r.drawn}
+                  </td>
+                  <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
+                    {r.lost}
+                  </td>
+                  <td className="px-1.5 py-2 text-center tabular-nums text-theme-muted">
+                    {r.goalDiff > 0 ? `+${r.goalDiff}` : r.goalDiff}
+                  </td>
+                  <td className="px-1.5 py-2 text-center font-bold tabular-nums text-theme-heading">
+                    {r.points}
+                  </td>
+                  <td className="px-2 py-2">
+                    <div className="flex gap-1">
+                      {/* Newest first (leftmost) — that's how fans read a form strip;
                       the latest result also gets a ring so it's unambiguous. */}
-                  {r.form.slice(-5).reverse().map((f, j) => (
-                    <span
-                      key={j}
-                      title={j === 0 ? "Последен натпревар" : undefined}
-                      className={`inline-flex h-4 w-4 items-center justify-center rounded text-[9px] font-bold ${FORM_STYLE[f]} ${j === 0 ? "ring-2 ring-offset-1 ring-zinc-400" : ""}`}
+                      {recent.map((e, j) => (
+                        <button
+                          key={j}
+                          type="button"
+                          title={
+                            (j === 0 ? "Последен натпревар: " : "") +
+                            formText(e)
+                          }
+                          aria-label={formText(e)}
+                          aria-expanded={j === pickedIdx}
+                          onClick={() =>
+                            setPicked(j === pickedIdx ? null : `${r.team}|${j}`)
+                          }
+                          className={`inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded text-[9px] font-bold leading-none ${FORM_STYLE[e.result]} ${j === 0 ? "ring-2 ring-offset-1 ring-zinc-400" : ""} ${j === pickedIdx ? "scale-125" : ""}`}
+                        >
+                          {FORM_LABEL[e.result]}
+                        </button>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+                {pickedEntry ? (
+                  <tr className="border-b border-zinc-50 bg-zinc-50/70">
+                    <td
+                      colSpan={9}
+                      className="px-3 py-2 text-xs text-theme-muted"
                     >
-                      {FORM_LABEL[f]}
-                    </span>
-                  ))}
-                </div>
-              </td>
-            </tr>
-          ))}
+                      {pickedEntry.round != null ? (
+                        <span className="mr-2 font-semibold uppercase tracking-wide">
+                          {pickedEntry.round}. коло
+                        </span>
+                      ) : null}
+                      <span
+                        className={
+                          pickedEntry.home === r.team
+                            ? "font-semibold text-theme-heading"
+                            : ""
+                        }
+                      >
+                        {pickedEntry.home}
+                      </span>{" "}
+                      <span className="font-bold tabular-nums text-theme-heading">
+                        {pickedEntry.homeScore} : {pickedEntry.awayScore}
+                      </span>{" "}
+                      <span
+                        className={
+                          pickedEntry.away === r.team
+                            ? "font-semibold text-theme-heading"
+                            : ""
+                        }
+                      >
+                        {pickedEntry.away}
+                      </span>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>

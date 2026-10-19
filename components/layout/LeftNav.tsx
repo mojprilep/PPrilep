@@ -25,11 +25,9 @@ import {
   faBell,
   faCarSide,
   faBusSimple,
-  faPersonRunning,
-  faFutbol,
-  faVolleyball,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FootballPlayerIcon, HandballIcon } from "./SportIcons";
 import { Map } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { createClient } from "../../lib/supabase/client";
@@ -366,21 +364,15 @@ export default function LeftNav() {
           />
           <div className="pl-5">
             <LeftNavItem
-              href="/sport/ce-trcame"
-              label="Че Трчаме 2026"
-              iconNode={<FontAwesomeIcon icon={faPersonRunning} className="h-4 w-4" />}
-              iconTone="teal"
-            />
-            <LeftNavItem
               href="/sport/raspored"
               label="Лига регион 4"
-              iconNode={<FontAwesomeIcon icon={faFutbol} className="h-4 w-4" />}
+              iconNode={<FootballPlayerIcon className="h-4 w-4" />}
               iconTone="orange"
             />
             <LeftNavItem
               href="/sport/rakomet"
               label="Ракомет — Супер лига"
-              iconNode={<FontAwesomeIcon icon={faVolleyball} className="h-4 w-4" />}
+              iconNode={<HandballIcon className="h-4 w-4" />}
               iconTone="orange"
             />
           </div>
