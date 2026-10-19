@@ -8,7 +8,8 @@
  * (e.g. ПРИЛЕП) is picked out in teal in both views.
  */
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 
 import {
@@ -187,6 +188,138 @@ function formText(e: FormEntry): string {
   return `${round}${e.home} ${e.homeScore} : ${e.awayScore} ${e.away}`;
 }
 
+const TIP_W = 224; // px — matches w-56 below
+const RESULT_TEXT: Record<"W" | "D" | "L", string> = {
+  W: "Победа",
+  D: "Нерешено",
+  L: "Пораз",
+};
+
+/**
+ * One form box. Hover (desktop) or tap (phones) opens a small card with the
+ * round and score. The card is portalled to <body> with fixed positioning so
+ * the table's horizontal-scroll wrapper can't clip it.
+ */
+function FormBadge({
+  entry: e,
+  team,
+  latest,
+}: {
+  entry: FormEntry;
+  team: string;
+  latest: boolean;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{
+    x: number;
+    y: number;
+    arrow: number;
+    below: boolean;
+  } | null>(null);
+
+  const show = () => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r) return;
+    const cx = r.left + r.width / 2;
+    // Keep the card inside the viewport; the arrow still points at the box.
+    const x = Math.min(
+      Math.max(cx, TIP_W / 2 + 8),
+      window.innerWidth - TIP_W / 2 - 8,
+    );
+    const below = r.top < 120;
+    setPos({ x, y: below ? r.bottom + 8 : r.top - 8, arrow: cx - x, below });
+  };
+  const hide = () => setPos(null);
+
+  // A tap-opened card closes on any outside tap or scroll.
+  useEffect(() => {
+    if (!pos) return;
+    const close = (ev: Event) => {
+      if (ev.target instanceof Node && ref.current?.contains(ev.target)) return;
+      setPos(null);
+    };
+    document.addEventListener("pointerdown", close);
+    window.addEventListener("scroll", hide, true);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      window.removeEventListener("scroll", hide, true);
+    };
+  }, [pos]);
+
+  const side = (name: string, score: number, won: boolean) => (
+    <div className="flex items-center justify-between gap-3">
+      <span
+        className={`truncate ${name === team ? "font-bold text-white" : "text-zinc-300"}`}
+      >
+        {name}
+      </span>
+      <span
+        className={`tabular-nums font-bold ${won ? "text-white" : "text-zinc-400"}`}
+      >
+        {score}
+      </span>
+    </div>
+  );
+
+  return (
+    <>
+      <button
+        ref={ref}
+        type="button"
+        aria-label={formText(e)}
+        aria-expanded={pos !== null}
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
+        onClick={show}
+        className={`grid h-[22px] w-[22px] cursor-pointer place-items-center rounded-md border-2 outline-none ${latest ? "border-zinc-400" : "border-transparent"}`}
+      >
+        <span
+          className={`grid h-4 w-4 place-items-center rounded text-[9px] font-bold leading-none ${FORM_STYLE[e.result]}`}
+        >
+          {FORM_LABEL[e.result]}
+        </span>
+      </button>
+      {pos
+        ? createPortal(
+            <div
+              role="tooltip"
+              style={{
+                left: pos.x,
+                top: pos.y,
+                width: TIP_W,
+                transform: `translate(-50%, ${pos.below ? "0" : "-100%"})`,
+              }}
+              className="pointer-events-none fixed z-50 rounded-xl bg-zinc-900 px-3 py-2.5 text-xs shadow-xl"
+            >
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                  {e.round != null ? `${e.round}. коло` : ""}
+                  {latest ? " · последен" : ""}
+                </span>
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${FORM_STYLE[e.result]}`}
+                >
+                  {RESULT_TEXT[e.result]}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {side(e.home, e.homeScore, e.homeScore > e.awayScore)}
+                {side(e.away, e.awayScore, e.awayScore > e.homeScore)}
+              </div>
+              <span
+                style={{ left: `calc(50% + ${pos.arrow}px)` }}
+                className={`absolute h-2.5 w-2.5 -translate-x-1/2 rotate-45 bg-zinc-900 ${pos.below ? "-top-1" : "-bottom-1"}`}
+              />
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
+  );
+}
+
 function StandingsTable({
   rows,
   ourTeam,
@@ -194,9 +327,6 @@ function StandingsTable({
   rows: StandingRow[];
   ourTeam: string | null;
 }) {
-  // Tapped form box ("team|index") — hover shows a tooltip on desktop, but
-  // phones have no hover, so a tap opens the match under that team's row.
-  const [picked, setPicked] = useState<string | null>(null);
   return (
     <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
       <table className="w-full border-collapse text-sm">
@@ -246,10 +376,6 @@ function StandingsTable({
         <tbody>
           {rows.map((r, i) => {
             const recent = r.form.slice(-5).reverse();
-            const pickedIdx = picked?.startsWith(`${r.team}|`)
-              ? Number(picked.slice(r.team.length + 1))
-              : -1;
-            const pickedEntry = recent[pickedIdx];
             return (
               <Fragment key={r.team}>
                 <tr
@@ -282,65 +408,20 @@ function StandingsTable({
                     {r.points}
                   </td>
                   <td className="px-2 py-2">
-                    <div className="flex gap-1">
+                    <div className="flex items-center gap-0.5">
                       {/* Newest first (leftmost) — that's how fans read a form strip;
-                      the latest result also gets a ring so it's unambiguous. */}
+                      the latest result is framed so it's unambiguous. */}
                       {recent.map((e, j) => (
-                        <button
+                        <FormBadge
                           key={j}
-                          type="button"
-                          title={
-                            (j === 0 ? "Последен натпревар: " : "") +
-                            formText(e)
-                          }
-                          aria-label={formText(e)}
-                          aria-expanded={j === pickedIdx}
-                          onClick={() =>
-                            setPicked(j === pickedIdx ? null : `${r.team}|${j}`)
-                          }
-                          className={`inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded text-[9px] font-bold leading-none ${FORM_STYLE[e.result]} ${j === 0 ? "ring-2 ring-offset-1 ring-zinc-400" : ""} ${j === pickedIdx ? "scale-125" : ""}`}
-                        >
-                          {FORM_LABEL[e.result]}
-                        </button>
+                          entry={e}
+                          team={r.team}
+                          latest={j === 0}
+                        />
                       ))}
                     </div>
                   </td>
                 </tr>
-                {pickedEntry ? (
-                  <tr className="border-b border-zinc-50 bg-zinc-50/70">
-                    <td
-                      colSpan={9}
-                      className="px-3 py-2 text-xs text-theme-muted"
-                    >
-                      {pickedEntry.round != null ? (
-                        <span className="mr-2 font-semibold uppercase tracking-wide">
-                          {pickedEntry.round}. коло
-                        </span>
-                      ) : null}
-                      <span
-                        className={
-                          pickedEntry.home === r.team
-                            ? "font-semibold text-theme-heading"
-                            : ""
-                        }
-                      >
-                        {pickedEntry.home}
-                      </span>{" "}
-                      <span className="font-bold tabular-nums text-theme-heading">
-                        {pickedEntry.homeScore} : {pickedEntry.awayScore}
-                      </span>{" "}
-                      <span
-                        className={
-                          pickedEntry.away === r.team
-                            ? "font-semibold text-theme-heading"
-                            : ""
-                        }
-                      >
-                        {pickedEntry.away}
-                      </span>
-                    </td>
-                  </tr>
-                ) : null}
               </Fragment>
             );
           })}
