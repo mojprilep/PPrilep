@@ -187,10 +187,13 @@ function StandingsTable({ rows, ourTeam }: { rows: StandingRow[]; ourTeam: strin
               </td>
               <td className="hidden px-2 py-2 sm:table-cell">
                 <div className="flex gap-1">
-                  {r.form.slice(-5).map((f, j) => (
+                  {/* Newest first (leftmost) — that's how fans read a form strip;
+                      the latest result also gets a ring so it's unambiguous. */}
+                  {r.form.slice(-5).reverse().map((f, j) => (
                     <span
                       key={j}
-                      className={`inline-flex h-4 w-4 items-center justify-center rounded text-[9px] font-bold ${FORM_STYLE[f]}`}
+                      title={j === 0 ? "Последен натпревар" : undefined}
+                      className={`inline-flex h-4 w-4 items-center justify-center rounded text-[9px] font-bold ${FORM_STYLE[f]} ${j === 0 ? "ring-2 ring-offset-1 ring-zinc-400" : ""}`}
                     >
                       {FORM_LABEL[f]}
                     </span>
