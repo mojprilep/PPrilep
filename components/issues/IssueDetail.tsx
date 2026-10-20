@@ -13,6 +13,7 @@ import {
   X,
   Share2,
   MapPin,
+  ExternalLink,
   MessageCircle,
   Pencil,
   Trash2,
@@ -2820,10 +2821,23 @@ export default function IssueDetail({
               <h2 className="text-sm font-semibold leading-snug">
                 {currentIssue.title}
               </h2>
-              {currentIssue.street_name && (
-                <p className="flex items-center gap-1 text-xs text-teal-600 font-medium mt-1">
-                  <MapPin size={11} /> {currentIssue.street_name}
-                </p>
+              {typeof currentIssue.lat === "number" &&
+              typeof currentIssue.lng === "number" ? (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${currentIssue.lat},${currentIssue.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Отвори ја локацијата во Google Maps"
+                  className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-teal-600 hover:underline">
+                  <MapPin size={11} /> {currentIssue.street_name || "Види локација на мапа"}
+                  <ExternalLink size={10} className="opacity-70" />
+                </a>
+              ) : (
+                currentIssue.street_name && (
+                  <p className="flex items-center gap-1 text-xs text-teal-600 font-medium mt-1">
+                    <MapPin size={11} /> {currentIssue.street_name}
+                  </p>
+                )
               )}
               {currentIssue.description && (
                 <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
