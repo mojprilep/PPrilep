@@ -57,8 +57,8 @@ export async function POST(req: Request) {
       revalidatePath("/sport/rakomet", "page");
     }
 
-    // Always revalidate the home page (it may show recent posts/events)
-    revalidatePath("/", "page");
+    // The home page shows no Sanity content (only Supabase rows), so a publish
+    // here doesn't purge "/" — that was a wasted ISR write per webhook.
 
     // Note: publishing a cityEvent intentionally does NOT push a notification —
     // events are announced via Instagram auto-post + the manual FB share button,

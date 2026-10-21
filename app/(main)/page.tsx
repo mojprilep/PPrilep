@@ -24,10 +24,10 @@ type HomeInitiative = {
   created_at: string;
 };
 
-// Same page for every visitor, cached for a minute. The personal bits (the
+// Same page for every visitor, cached for 5 minutes. The personal bits (the
 // greeting name, admin controls on the feed) are filled in client-side by
 // useViewer, so the server never reads cookies here.
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function HomePage() {
   const supabase = createPublicClient();

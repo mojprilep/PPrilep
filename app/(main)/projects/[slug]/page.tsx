@@ -28,7 +28,9 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export const revalidate = 60;
+// Sanity content: the /api/revalidate webhook purges on publish, so the timer
+// is only a daily fallback (was 60s = a rebuild per visited slug per minute).
+export const revalidate = 86400;
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;

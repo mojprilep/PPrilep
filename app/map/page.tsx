@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 // Public data only (cookie-free client), so the page can be cached.
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function MapPage() {
   const supabase = createPublicClient();

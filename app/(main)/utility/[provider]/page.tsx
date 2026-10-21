@@ -75,10 +75,10 @@ const PROVIDER_SUBTITLES: Record<Provider, string> = {
 };
 
 // Public data only (cookie-free client), so the page is cached and rebuilt at
-// most once a minute. Staff tools and the form pre-fill are resolved in the
+// most every 5 minutes. Staff tools and the form pre-fill are resolved in the
 // browser (UtilityViewerParts). Live bus positions never come from this page —
 // BusRouteMap polls them client-side — so caching adds no tracking delay.
-export const revalidate = 60;
+export const revalidate = 300;
 export async function generateStaticParams() {
   return PROVIDERS.map((provider) => ({ provider }));
 }

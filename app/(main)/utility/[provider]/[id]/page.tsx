@@ -36,7 +36,7 @@ interface Props {
 }
 
 // Public data only (cookie-free client), so the page can be cached.
-export const revalidate = 60;
+export const revalidate = 300;
 // Empty = render each path on first visit, then cache it (runtime ISR).
 export async function generateStaticParams() {
   return [];

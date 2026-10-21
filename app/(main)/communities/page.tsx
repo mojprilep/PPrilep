@@ -24,7 +24,7 @@ const CATEGORIES: Category[] = [
 ];
 
 // Public data only; the admin export button checks the viewer client-side.
-export const revalidate = 60;
+export const revalidate = 600;
 
 export default async function CommunitiesPage() {
   const supabase = createPublicClient();

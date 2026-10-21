@@ -3,7 +3,7 @@ import { createPublicClient } from "../../../lib/supabase/public";
 import { fetchTopHeroes } from "../../../lib/data/issues";
 
 // Public data only (cookie-free client), so the page can be cached.
-export const revalidate = 60;
+export const revalidate = 600;
 
 interface Hero {
   name: string;

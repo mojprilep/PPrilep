@@ -15,7 +15,7 @@ interface Props {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Public data only (cookie-free client), so the page can be cached.
-export const revalidate = 60;
+export const revalidate = 300;
 // Empty = render each path on first visit, then cache it (runtime ISR).
 export async function generateStaticParams() {
   return [];
