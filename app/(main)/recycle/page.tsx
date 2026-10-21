@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "@/components/ui/Link";
 import GlassContainerMap from "../../../components/recycle/GlassContainerMap";
 import CollapsibleList from "../../../components/recycle/CollapsibleList";
 import {
@@ -33,6 +34,20 @@ export default function RecyclePage() {
           каде и зошто да ја селектираш.
         </p>
       </header>
+
+      {/* Green venues */}
+      <Link
+        href="/recycle/eko-ugostiteli"
+        className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 transition hover:border-emerald-400">
+        <span className="text-3xl">🌿</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-emerald-900">Еко угостители</span>
+          <span className="block text-xs text-emerald-900/80">
+            Кафулиња и ресторани што го селектираат стаклото и лименките со Пакомак — поддржи ги.
+          </span>
+        </span>
+        <span className="text-emerald-700">→</span>
+      </Link>
 
       {/* Why separate glass */}
       <section className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-5">

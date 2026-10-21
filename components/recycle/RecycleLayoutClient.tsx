@@ -12,7 +12,9 @@ export default function RecycleLayoutClient({ children }: Props) {
   const { setOverridePanel } = useRightPanel();
 
   useEffect(() => {
-    setOverridePanel(<RecycleRightPanel />, "/recycle", true);
+    // Not exact: sub-pages (/recycle/eko-ugostiteli) share the same panel —
+    // with exact=true they were left on the loading skeleton.
+    setOverridePanel(<RecycleRightPanel />, "/recycle");
     return () => setOverridePanel(null, "/recycle");
   }, [setOverridePanel]);
 

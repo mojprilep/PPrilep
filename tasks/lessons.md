@@ -506,3 +506,16 @@ missing on the mobile app"). Fiddly-to-build не е причина да се с
 endpoint (`getRequestUser` прима Bearer) наместо да ставиш линк кон веб — освен ако
 корисникот експлицитно не побара линк. Ако сепак изоставам дел, кажи го јасно и
 прашај, не одлучувај тивко.
+
+## Confirm the concept, not just the details (Oct 2026)
+
+Context: "Рециклажа за угостители". The user said "venue orders" and I built a
+venue-facing pickup-ordering system (orders, secret codes, QR, admin queue).
+They corrected twice: venues don't apply, then — the HoReCa sector isn't
+involved at all; we just list/promote green venues from ПАКОМАК's data.
+
+- **Before building a multi-part feature, restate WHO uses it and WHAT they
+  do in one sentence and get a yes.** My clarifying questions asked about
+  details (streams, fulfiller, platforms) on top of an assumed concept.
+- When a correction lands mid-build, re-question the whole premise, not just
+  the one part the user pointed at.

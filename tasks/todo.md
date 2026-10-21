@@ -1,3 +1,28 @@
+# Еко угостители — promote venues that recycle with ПАКОМАК
+
+We list and promote the cafés, restaurants, bars and hotels that already sort
+glass / cans with ПАКОМАК, from ПАКОМАК's data. The HoReCa sector does NOT use
+the app: no orders, accounts or codes. Venues that want in get ПАКОМАК's
+contact and sign with ПАКОМАК directly.
+(First build was a venue pickup-order system — wrong, deleted 2026-10-21.)
+
+## Data (`supabase/add_green_venues.sql`, run once in SQL editor)
+- `green_venues`: public (name, kind, address, lat/lng, phone, website,
+  glass, cans, partner_since) + admin-only (ЕДБ, pakomak_ref, contact person
+  + phone, email, notes), active.
+- Admin-only RLS; public reads via view `green_venues_public` (active only).
+
+## Plan
+- [x] SQL migration
+- [x] Admin server actions: CRUD, import (match by pakomak_ref / ЕДБ), active, delete
+- [x] Web `/recycle/eko-ugostiteli`: grouped list + "join → contact ПАКОМАК"; CTA on /recycle
+- [x] Web admin `/admin/recycle`: list, form, paste/CSV import
+- [ ] ПАКОМАК phone / form for the CTA (`PAKOMAK_CONTACT` in lib/recycle.ts)
+- [ ] Run SQL, import ПАКОМАК's table, check on dev
+- [ ] Mobile screen (list from the view), entry from recycle tab; OTA only when asked
+
+---
+
 # Спорт и Рекреација — club/organisation profiles
 
 A free profile for every sport club, federation, gym and recreation
