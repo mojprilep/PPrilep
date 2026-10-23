@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
+import GameIntro from "../../../components/games/GameIntro";
 import ZborcheGame from "../../../components/zborche/ZborcheGame";
+import ZborcheLogo from "../../../components/zborche/ZborcheLogo";
 
 export const metadata: Metadata = {
   title: "ЗборЧе | Мој Прилеп",
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
 export default function ZborchePage() {
   return (
     <div className="mx-auto w-full max-w-lg overflow-x-hidden px-3 py-2">
+      <GameIntro id="zborche" mark={<ZborcheLogo height={64} />} tagline="Погоди го зборот на денот" />
       <ZborcheGame />
     </div>
   );

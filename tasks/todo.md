@@ -1,3 +1,97 @@
+# КвизЧе — weekly history quiz (Прилеп & Македонија) — v1 BUILT, not released
+
+One themed week (Mon–Sun), ONE question per day, getting harder like ЗборЧе.
+Scored on correctness + time. Ships by OTA (pure JS, no native module) + web.
+
+## Rules (user, 2026-10-23)
+- Mon 2 options · Tue 2 · Wed 3 · Thu 4 · Fri 5 · Sat 5 · Sun timeline (4–5 events, all or nothing)
+- points = correct ? round(day × 100 × (1 + 0.5 × speed)) : 0; speed fades over 60 s (timeline 120 s)
+- Time: server starts the clock on /start (reopening never resets it); the phone/browser stopwatch
+  counts only if within 3 s below the server's figure (strips network lag, can't be faked lower)
+- Logged out: playable, timed on the device, remembered locally, not ranked
+
+## Done
+- [x] `supabase/add_kvizche.sql` — weeks / questions / attempts, RLS, explicit GRANTs, 2 board RPCs — ⚠ user runs it
+- [x] lib/kvizche.ts (pure helpers, node-tested) + lib/kvizche-server.ts
+- [x] API: GET /api/kvizche, POST /api/kvizche/start, POST /api/kvizche/answer (cookie or Bearer)
+- [x] /admin/kvizche — weeks (create/edit/publish/delete) + per-day question editor
+- [x] Web /kvizche (play + Денес/Недела boards), right-panel card; tsc + eslint clean
+- [x] Mobile src/lib/kvizche.ts + src/app/kvizche.tsx (play, timeline arrows, result, boards); tsc + eslint clean
+- [x] Mobile drawer + locale keys via `scripts/add-kvizche-nav.mjs` (idempotent; re-run on a clean tree before OTA)
+- [x] First week drafted: `supabase/seed_kvizche_osloboduvanje_prilep.sql` (2–8 Nov 2026, published=false)
+- [x] Play clock toned down: small muted m:ss (0:07) bottom-right, ticks once a second (web + mobile)
+- [x] GameIntro splash for ЗборЧе + КвизЧе (logo pop, tagline, fade; ~1.3 s, tap to skip, reduced-motion off; once per session web / per launch app) + КвизЧе wordmark
+
+## Open
+- [ ] User/historian verifies the first week's facts (list at the top of the seed SQL), then publishes in /admin/kvizche
+- [ ] Release: SQL → web push to main (on approval) → OTA 1.0.9 + 1.0.8 (on approval; stash hunt WIP, run nav script, publish, pop)
+- [ ] After the OTA: add "/kvizche" to APP_LINK_PATHS
+- [ ] TEMP tester mode (site admins: play any day + /api/kvizche/reset) — remove or keep admin-only before launch
+- [ ] Optional: "new question" push nudge
+
+## Review
+- Answers live in Supabase only — the Sanity dataset is public, so the solution would leak.
+- Only the first answer counts (`update … where answered_at is null`), so double taps/races can't re-score.
+- Timeline order is a deterministic per-question shuffle, so the server needs no per-player state to check it.
+
+# Потрага по богатство (Treasure Hunt) — v1
+
+Spec: Claude Docs "Treasure Hunt — Feature Spec". One hunt, one winner: an admin
+hides a QR at a secret spot and posts clues. The first signed-in player whose
+scan passes token + GPS + "not yet won" + rate-limit checks wins.
+
+## Decisions (2026-10-21)
+- Radius 50 m default (per hunt). Everything in Supabase + /admin/hunt (no Sanity).
+- Ships with native build 1.0.10 (expo-camera + /hunt app links).
+- PLAYED ONLY IN THE APP (user, 2026-10-21). Web = /admin/hunt + a teaser /hunt + an
+  "install the app" /hunt/<token> (QR scanned without the app). Scan API is Bearer-only.
+
+## Data (`supabase/add_treasure_hunt.sql`, explicit GRANTs)
+- `hunts` (public: title, cover, rules, prize, starts_at, status, found_at, winner_name, reveal lat/lng after found)
+- `hunt_clues` (hunt_id, body, photo, lat/lng, published_at) public once published
+- `hunt_secrets` (hunt_id, token, lat, lng, radius_m) service role only
+- `hunt_attempts` log, `hunt_winners` (hunt_id PK → atomic single winner, claim_code)
+- New push category `hunt` in lib/push/prefs.ts and the mobile prefs panel.
+
+## API (web, server only)
+- `POST /api/hunt/scan` {token, lat, lng, accuracy} with Bearer or cookie →
+  rate limit → token → radius → hunt_try_win (row-locked status flip + winner insert) → result.
+- Admin actions push on announce/start/clue/rules; scan route pushes found + you-won.
+
+## Web
+- `/hunt`: the 3-state page. `/hunt/[token]`: the QR landing (sign-in →
+  geolocation → scan API → result).
+- `/admin/hunt`: set spot + radius, generate/print QR (rotate = new token),
+  attempts log, winner + handed over.
+
+## Mobile
+- `hunt` screen (3 states, clue feed, "open in maps"), `hunt/[token]` scan
+  result, in-app QR scanner (expo-camera), drawer entry, deep link.
+- ⚠ Needs a NATIVE BUILD (1.0.10): expo-camera is not installed, and `/hunt` must
+  be claimed in app.json (associatedDomains/intentFilters). OTA alone can't ship it.
+
+## Progress
+- [x] SQL migration (`supabase/add_treasure_hunt.sql`) — ⚠ user runs it once in the SQL editor
+- [x] lib/hunt.ts, lib/push/hunt.ts, `hunt` push category
+- [x] `POST /api/hunt/scan` (atomic win via hunt_try_win RPC, attempts log, rate limit)
+- [x] Admin actions + `/admin/hunt` (details, status w/ pushes, spot + "I am here", QR print/rotate, clues, winner, scan log)
+- [x] Web made app-only: `/hunt` teaser (status, prize, winner once found, store buttons — no clues),
+      `/hunt/[token]` → install-the-app page; scan API uses getBearerUser (cookie session ignored)
+- [x] tsc + eslint clean; both pages render; scan with a web cookie → 401
+- [ ] Add `/hunt`, `/hunt/*` to APP_LINK_PATHS — ONLY together with the mobile release: iOS AASA
+      claims apply to every installed version, so claiming it now sends 1.0.9 users to the app home
+- [x] Mobile: src/lib/hunt.ts, hunt + hunt/[token] screens, expo-camera scanner, drawer, webRoutes,
+      app.json claims, `hunt` in prefs panel, locales (tsc + eslint clean; uncommitted)
+      Scanner is guarded with requireOptionalNativeModule("ExpoCamera") → "update the app" on old binaries
+- [ ] Native build 1.0.10 (expo.version bump) — needed for the camera scanner + Android /hunt claim
+- [ ] End-to-end test after the SQL runs (create → spot → live → scan from phone)
+
+## Open
+- [x] Radius: 50 m default, per hunt
+- [ ] Event-level open questions in the spec (prize, date, deadline rule, MK/EN, rules accept)
+
+---
+
 # Еко угостители — promote venues that recycle with ПАКОМАК
 
 We list and promote the cafés, restaurants, bars and hotels that already sort
@@ -19,7 +113,7 @@ contact and sign with ПАКОМАК directly.
 - [x] Web admin `/admin/recycle`: list, form, paste/CSV import
 - [ ] ПАКОМАК phone / form for the CTA (`PAKOMAK_CONTACT` in lib/recycle.ts)
 - [ ] Run SQL, import ПАКОМАК's table, check on dev
-- [ ] Mobile screen (list from the view), entry from recycle tab; OTA only when asked
+- [x] Mobile hub + list (27aba1a; OTA 1.0.9 5b09b066 / 1.0.8 a862fb78)
 
 ---
 

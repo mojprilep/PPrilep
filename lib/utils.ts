@@ -192,7 +192,7 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   // app/(main) routes
   "about", "account", "agency", "bus-station", "communities", "data-deletion",
   "events", "fund", "heroes", "ideas", "info", "initiatives", "issues",
-  "kindergarten", "kino", "positive", "prevoz", "privacy", "projects",
+  "kindergarten", "kino", "kvizche", "positive", "prevoz", "privacy", "projects",
   "recycle", "sponsors", "support", "taxi", "utility",
   // top-level app routes / system
   "admin", "api", "auth", "gradinka", "map", "studio", "u",

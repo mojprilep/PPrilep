@@ -31,6 +31,7 @@ export const THREE_COLUMN_ROUTES: readonly string[] = [
   "/recycle",             // Рециклирање
   "/kino",                // Кино анкета
   "/zborche",             // ЗборЧе (игра)
+  "/kvizche",             // КвизЧе (историски квиз)
   "/sport",               // Спорт и Рекреација
   "/privacy",          // Политика на приватност
   "/terms",            // Услови за користење

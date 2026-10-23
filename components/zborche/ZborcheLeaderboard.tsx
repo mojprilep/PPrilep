@@ -83,7 +83,7 @@ export default function ZborcheLeaderboard() {
   );
 }
 
-function TabButton({
+export function TabButton({
   active,
   onClick,
   children,
@@ -181,7 +181,7 @@ function AllTimeList({ rows, me }: { rows: LeaderRow[] | null; me: string | null
  * the signed-in player (meIndex) ranks below the preview, their row is pinned
  * under a "⋯" with its real rank.
  */
-function Expandable({
+export function Expandable({
   count,
   meIndex,
   children,
@@ -220,7 +220,7 @@ function Expandable({
   );
 }
 
-function Row({
+export function Row({
   index,
   name,
   avatarUrl,
