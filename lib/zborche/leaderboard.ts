@@ -151,14 +151,53 @@ export async function fetchMyStats(): Promise<Stats | null> {
   }
 }
 
-/** The public board, ranked (wins, then fewest average guesses, then games). */
-export async function fetchLeaderboard(limit = 20): Promise<LeaderRow[]> {
+/** One player who solved today's word, as returned by zborche_today_board(). */
+export type TodayRow = {
+  user_id: string;
+  name: string;
+  avatar_url: string | null;
+  attempts: number;
+  solved_at: string;
+  /** Signed-in players who finished today, win or lose (same on every row). */
+  played_today: number;
+};
+
+/** The public all-time board, every player, ranked (wins, then fewest average
+ *  guesses, then games). */
+export async function fetchLeaderboard(): Promise<LeaderRow[]> {
   try {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("zborche_leaderboard", { p_limit: limit });
+    const { data, error } = await supabase.rpc("zborche_leaderboard");
     if (error || !data) return [];
     return data as LeaderRow[];
   } catch {
     return [];
+  }
+}
+
+/**
+ * Today's board: everyone who solved today's word (Skopje date, picked on the
+ * server), fewest guesses first, then whoever finished first.
+ */
+export async function fetchTodayBoard(): Promise<TodayRow[]> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("zborche_today_board");
+    if (error || !data) return [];
+    return data as TodayRow[];
+  } catch {
+    return [];
+  }
+}
+
+/** The signed-in player's id, or null — used to highlight "you" on the boards. */
+export async function fetchMyUserId(): Promise<string | null> {
+  try {
+    const {
+      data: { user },
+    } = await createClient().auth.getUser();
+    return user?.id ?? null;
+  } catch {
+    return null;
   }
 }
