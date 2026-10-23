@@ -55,6 +55,8 @@ export default function KvizcheGame() {
   const [busy, setBusy] = useState(false);
   const [question, setQuestion] = useState<PlayQuestion | null>(null);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  /** The day whose result was just revealed — only that one animates in. */
+  const [revealed, setRevealed] = useState<number | null>(null);
   const [clock, setClock] = useState<Clock>({ shownAt: 0, offset: 0 });
 
   const load = useCallback(
@@ -101,13 +103,16 @@ export default function KvizcheGame() {
     try {
       const { result } = await answerKvizche(question.id, answer, clientMs);
       if (!state.signedIn) saveAnonResult(state.today, result);
-      setQuestion(null);
-      await load();
+      // Show the answer straight from the response; the week and the boards
+      // refresh in the background instead of holding the reveal back.
+      setState((s) => s && { ...s, days: s.days.map((d) => (d.day === result.day ? { ...d, status: "answered", result } : d)) });
       setSelectedDay(result.day);
-      window.dispatchEvent(new Event(KVIZCHE_EVENT));
+      setRevealed(result.day);
+      setQuestion(null);
+      setBusy(false);
+      void load().then(() => window.dispatchEvent(new Event(KVIZCHE_EVENT)));
     } catch (e) {
       setError((e as Error).message);
-    } finally {
       setBusy(false);
     }
   }
@@ -170,7 +175,10 @@ export default function KvizcheGame() {
                 key={d.day}
                 type="button"
                 disabled={!clickable || !!question}
-                onClick={() => setSelectedDay(d.day)}
+                onClick={() => {
+                  setSelectedDay(d.day);
+                  setRevealed(null);
+                }}
                 className={`flex flex-col items-center rounded-lg border-2 py-1.5 text-[11px] transition ${
                   isSel ? "border-[#2aa99d] bg-[#e3f4f1]" : "border-transparent bg-[#f6faf8]"
                 } ${clickable ? "hover:border-[#2aa99d]/50" : "opacity-60"}`}
@@ -198,7 +206,7 @@ export default function KvizcheGame() {
       {question ? (
         <Play question={question} clock={clock} busy={busy} onSubmit={submit} />
       ) : selected.status === "answered" && selected.result ? (
-        <ResultCard result={selected.result} />
+        <ResultCard key={selected.day} result={selected.result} animate={revealed === selected.day} />
       ) : selected.status === "today" ? (
         <StartCard day={selected.day} kind={selected.kind} optionCount={selected.optionCount} signedIn={state.signedIn} busy={busy} onStart={() => begin(selected.day)} />
       ) : (
@@ -293,6 +301,8 @@ function Play({
 }) {
   const [elapsed, setElapsed] = useState(clock.offset);
   const [order, setOrder] = useState(() => question.options.map((_, i) => i));
+  const [picked, setPicked] = useState<number | null>(null);
+  const checking = busy && picked !== null;
 
   useEffect(() => {
     const t = setInterval(() => setElapsed(clock.offset + performance.now() - clock.shownAt), 1000);
@@ -318,17 +328,26 @@ function Play({
 
       {question.kind === "choice" ? (
         <div className="mt-4 space-y-2">
-          {question.options.map((o, i) => (
-            <button
-              key={i}
-              type="button"
-              disabled={busy}
-              onClick={() => onSubmit(i)}
-              className="w-full rounded-xl border-2 border-[#e4ece8] bg-[#f6faf8] px-4 py-3 text-left text-sm font-medium text-slate-800 transition hover:border-[#2aa99d] disabled:opacity-60"
-            >
-              {o}
-            </button>
-          ))}
+          {question.options.map((o, i) => {
+            const mine = checking && picked === i;
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setPicked(i);
+                  onSubmit(i);
+                }}
+                className={`flex w-full items-center gap-2 rounded-xl border-2 px-4 py-3 text-left text-sm font-medium text-slate-800 transition hover:border-[#2aa99d] ${
+                  mine ? "kv-checking border-[#2aa99d] bg-[#e3f4f1]" : checking ? "border-[#e4ece8] bg-[#f6faf8] opacity-40" : "border-[#e4ece8] bg-[#f6faf8] disabled:opacity-60"
+                }`}
+              >
+                <span className="min-w-0 flex-1">{o}</span>
+                {mine && <span className="kv-spin h-4 w-4 shrink-0 rounded-full border-2 border-[#2aa99d] border-t-transparent" />}
+              </button>
+            );
+          })}
         </div>
       ) : (
         <>
@@ -367,11 +386,15 @@ function Play({
           <button
             type="button"
             disabled={busy}
-            onClick={() => onSubmit(order)}
-            className="mt-4 w-full rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-50"
+            onClick={() => {
+              setPicked(0);
+              onSubmit(order);
+            }}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-70"
             style={{ background: BRAND }}
           >
-            Потврди редослед
+            {checking && <span className="kv-spin h-4 w-4 rounded-full border-2 border-white border-t-transparent" />}
+            {checking ? "Се проверува…" : "Потврди редослед"}
           </button>
         </>
       )}
@@ -379,20 +402,39 @@ function Play({
       <p className="mt-3 inline-flex w-full items-center justify-end gap-1 font-mono text-[11px] text-slate-400">
         <Clock size={11} /> {formatClock(elapsed)}
       </p>
+      <style>{`
+        @keyframes kv-pulse{50%{transform:scale(.98)}}
+        @keyframes kv-spin{to{transform:rotate(360deg)}}
+        .kv-checking{animation:kv-pulse .8s ease-in-out infinite}
+        .kv-spin{animation:kv-spin .7s linear infinite}
+        @media (prefers-reduced-motion: reduce){.kv-checking{animation:none}}
+      `}</style>
     </section>
   );
 }
 
-function ResultCard({ result }: { result: KvizcheResult }) {
+/** `animate`: the answer was just given — slide the card in, pop the verdict, shake it if wrong. */
+function ResultCard({ result, animate = false }: { result: KvizcheResult; animate?: boolean }) {
   const isTimeline = result.kind === "timeline";
   const picked = result.answer;
   const solution = result.solution;
   return (
-    <section className="rounded-2xl border border-[#e4ece8] bg-white p-4">
+    <section className={`rounded-2xl border border-[#e4ece8] bg-white p-4 ${animate ? "kv-in" : ""}`}>
+      {animate && (
+        <style>{`
+          @keyframes kv-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+          @keyframes kv-pop{0%{transform:scale(.85)}60%{transform:scale(1.04)}100%{transform:none}}
+          @keyframes kv-shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+          .kv-in{animation:kv-in .35s ease-out both}
+          .kv-ok{animation:kv-pop .45s cubic-bezier(.34,1.56,.64,1) .15s both}
+          .kv-bad{animation:kv-shake .4s ease .2s both}
+          @media (prefers-reduced-motion: reduce){.kv-in,.kv-ok,.kv-bad{animation:none}}
+        `}</style>
+      )}
       <div
         className={`flex items-center justify-between rounded-xl px-3 py-2 ${
           result.correct ? "bg-[#e3f4f1] text-[#1f7f76]" : "bg-red-50 text-red-700"
-        }`}
+        } ${animate ? (result.correct ? "kv-ok" : "kv-bad") : ""}`}
       >
         <span className="text-sm font-bold">{result.correct ? "Точно! 🎉" : "Не е точно"}</span>
         <span className="text-[12px] font-semibold">
