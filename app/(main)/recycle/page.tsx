@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "@/components/ui/Link";
-import GlassContainerMap from "../../../components/recycle/GlassContainerMap";
+import RecycleMap from "../../../components/recycle/RecycleMap";
 import CollapsibleList from "../../../components/recycle/CollapsibleList";
 import {
   GLASS_CONTAINERS,
@@ -8,14 +8,14 @@ import {
 } from "../../../lib/data/glassContainers";
 
 export const metadata: Metadata = {
-  title: "Рециклирање — Стаклена амбалажа | Мој Прилеп",
+  title: "Рециклирање — стакло, хартија и пластика | Мој Прилеп",
   description:
-    "Каде да ја одложиш стаклената амбалажа во Прилеп — мапа со сите локации на контејнери за стакло. Собирај, селектирај, рециклирај.",
+    "Каде да ја одложиш стаклената амбалажа, хартијата и пластиката во Прилеп — мапа со сите контејнери за рециклирање. Собирај, селектирај, рециклирај.",
   alternates: { canonical: "/recycle" },
   openGraph: {
-    title: "Рециклирање на стакло во Прилеп",
+    title: "Рециклирање во Прилеп",
     description:
-      "Мапа со сите локации на контејнери за стаклена амбалажа во Прилеп. Стаклото не смее да завршува на депонија — селектирај го.",
+      "Мапа со сите контејнери за стакло, хартија и пластика во Прилеп. Амбалажата не смее да завршува на депонија — селектирај ја.",
     url: "/recycle",
     type: "article",
   },
@@ -74,14 +74,14 @@ export default function RecyclePage() {
       <section className="space-y-3">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold text-zinc-800">
-            📍 Мапа на контејнери за стакло
+            📍 Мапа на контејнери за рециклирање
           </h2>
           <p className="text-xs text-zinc-500">
-            Кликни на сина точка за да ја видиш локацијата и најди го најблискиот
+            Стакло, хартија и пластика — филтрирај по вид, кликни на контејнер и најди го најблискиот
             контејнер до тебе.
           </p>
         </div>
-        <GlassContainerMap />
+        <RecycleMap />
       </section>
 
       {/* Location list — collapsible */}

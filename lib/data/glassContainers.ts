@@ -39,8 +39,8 @@ export const GLASS_CONTAINERS: GlassContainer[] = [
   { id: "glass-18", name: "Гоце Делчев — Џими", lat: 41.3441935, lng: 21.5425803 },
   { id: "glass-19", name: "Гоце Делчев — Нова Автобуска", lat: 41.3445506, lng: 21.5401215 },
   { id: "glass-20", name: "Паркот кај судот", lat: 41.343253, lng: 21.5465057 },
-  { id: "glass-21", name: "Црква Света Петка — Точила", lat: 41.3481876, lng: 21.5380904 },
-  { id: "glass-22", name: "Браќа Миладиновци", lat: 41.3490082, lng: 21.5361164 },
+  { id: "glass-21", name: "Црква Света Петка — Точила", lat: 41.3483962, lng: 21.5378186 },
+  { id: "glass-22", name: "Браќа Миладиновци", lat: 41.3496065, lng: 21.5357343 },
   { id: "glass-23", name: "Пере Тошев", lat: 41.3506465, lng: 21.5380747 },
   { id: "glass-24", name: "Пере Тошев — Згради", lat: 41.3507228, lng: 21.5393242 },
   { id: "glass-25", name: "Пере Тошев 2", lat: 41.3504319, lng: 21.5396007 },
@@ -68,6 +68,7 @@ export const GLASS_CONTAINERS: GlassContainer[] = [
   { id: "glass-47", name: "Цар Самоил — Могила 2", lat: 41.3331506, lng: 21.555302 },
   { id: "glass-48", name: "Трајко Николоски", lat: 41.3372175, lng: 21.5405091 },
   { id: "glass-49", name: "Жабино маало", lat: 41.341, lng: 21.5327222 },
+  { id: "glass-50", name: "Илка Присаѓанка — Катна гаража", lat: 41.3470224, lng: 21.5538197 },
 ];
 
 export const GLASS_CONTAINER_COUNT = GLASS_CONTAINERS.length;
