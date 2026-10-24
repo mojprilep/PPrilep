@@ -52,6 +52,8 @@ create policy "Admin manages green venues"
 grant select, insert, update, delete on public.green_venues to authenticated;
 grant all on public.green_venues to service_role;
 
+-- NOTE: superseded by fix_definer_views_hunt_green.sql (definer function +
+-- security_invoker view). If you re-run this file, re-run that one after it.
 -- Public read: only the promotable columns of active venues. The view runs
 -- with its owner's rights (deliberately not security_invoker), so it can read
 -- past the admin-only RLS while exposing nothing private.
