@@ -277,11 +277,32 @@ export default function IssueDetail({
   const isAdmin = Boolean(authProfile?.is_admin);
   const isOwner = Boolean(userId && currentIssue.reported_by === userId);
   const canModerate = isOwner || isAdmin;
+  // Someone granted this one category personally (issue_category_grants) —
+  // e.g. the traffic-light technician for "Семафори". Server-side the agency
+  // RPCs check the same grant through user_handles_category().
+  const [hasCategoryGrant, setHasCategoryGrant] = useState(false);
+  useEffect(() => {
+    if (!userId) {
+      setHasCategoryGrant(false);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("issue_category_grants")
+      .select("category")
+      .eq("user_id", userId)
+      .eq("category", currentIssue.category)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setHasCategoryGrant(Boolean(data));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, currentIssue.category]);
   // Operator account whose institution handles this issue's category.
-  const canAgencyHandle = agencyHandlesCategory(
-    authProfile?.agency_id,
-    currentIssue.category,
-  );
+  const canAgencyHandle =
+    agencyHandlesCategory(authProfile?.agency_id, currentIssue.category) || hasCategoryGrant;
   // Who may advance the status (owner, admin, or the responsible institution).
   const canManageStatus = canModerate || canAgencyHandle;
 
