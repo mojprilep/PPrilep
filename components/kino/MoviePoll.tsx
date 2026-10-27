@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, Check, Film, CalendarDays, Pencil, Trash2, X } from "lucide-react";
 import Button from "../ui/Button";
+import Link from "@/components/ui/Link";
 import { useAuth } from "../../lib/hooks/useAuth";
 import { formatScreening } from "../../lib/sanity/moviePoll";
 
@@ -80,7 +81,14 @@ function markJoined(id: string | null) {
   }
 }
 
-export default function MoviePoll({ pollId }: { pollId?: string }) {
+/** How many films the compact (right-panel) card lists before "see all". */
+const COMPACT_LIMIT = 5;
+
+/**
+ * `compact` is the desktop right-panel card: vote on the leading films right
+ * there, everything else (full list, suggesting, editing) lives on /kino.
+ */
+export default function MoviePoll({ pollId, compact = false }: { pollId?: string; compact?: boolean }) {
   const { user, loading: authLoading } = useAuth();
   const [poll, setPoll] = useState<Poll | null>(null);
   const [options, setOptions] = useState<Option[]>([]);
@@ -199,8 +207,11 @@ export default function MoviePoll({ pollId }: { pollId?: string }) {
   }
 
   if (loading) {
-    return <div className="h-32 animate-pulse rounded-2xl bg-slate-100" />;
+    return compact ? null : <div className="h-32 animate-pulse rounded-2xl bg-slate-100" />;
   }
+
+  // The side panel carries no dead slot between polls.
+  if (compact && (!poll || !poll.live)) return null;
 
   if (!poll) {
     return (
@@ -214,6 +225,79 @@ export default function MoviePoll({ pollId }: { pollId?: string }) {
   // The leader is only highlighted once there is something to lead — with no
   // votes at all, every bar at 0% with one of them marked would be misleading.
   const top = options.length && options[0].votes > 0 ? options[0].votes : 0;
+  const shown = compact ? options.slice(0, COMPACT_LIMIT) : options;
+
+  if (compact) {
+    return (
+      <div className="lg:p-3">
+        <div className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-4">
+          <Link href="/kino" className="block">
+            <span className="flex items-center gap-2">
+              <span className="text-2xl">🎬</span>
+              <span className="text-lg font-extrabold tracking-tight text-slate-800">Кино анкета</span>
+            </span>
+            <span className="mt-2 block text-sm font-semibold tracking-tight text-gray-800">{poll.title}</span>
+            {poll.screening_at && (
+              <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+                <CalendarDays size={13} />
+                {formatScreening(poll.screening_at)}
+              </span>
+            )}
+          </Link>
+          <ul className="space-y-1.5">
+            {shown.map((o) => {
+              const pct = total > 0 ? Math.round((o.votes / total) * 100) : 0;
+              const chosen = mine === o.id;
+              return (
+                <li key={o.id}>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => vote(o.id)}
+                    aria-pressed={chosen}
+                    className={`relative w-full overflow-hidden rounded-lg border px-2.5 py-2 text-left transition-colors ${
+                      chosen ? "border-primary bg-[#2aa99d]/5" : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}>
+                    <span
+                      aria-hidden
+                      className={`absolute inset-y-0 left-0 transition-[width] duration-300 ${
+                        o.votes === top && top > 0 ? "bg-[#2aa99d]/15" : "bg-slate-100"
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    />
+                    <span className="relative flex items-center gap-2">
+                      <span
+                        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+                          chosen ? "border-primary bg-primary text-white" : "border-slate-300"
+                        }`}>
+                        {chosen && <Check size={9} strokeWidth={3} />}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-xs text-theme-heading">{o.title}</span>
+                      <span className="shrink-0 text-[11px] tabular-nums text-theme-muted">{pct}%</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {options.length === 0 && (
+            <p className="text-xs text-theme-muted">Сè уште нема предложени филмови. Биди прв!</p>
+          )}
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <Link href="/kino" className="inline-flex items-center gap-1 text-xs font-semibold text-[#2aa99d]">
+            {options.length > COMPACT_LIMIT
+              ? `Сите ${options.length} филмови →`
+              : poll.allow_suggestions
+                ? "Предложи филм →"
+                : "Отвори анкета →"}
+          </Link>
+          <p className="text-[11px] text-theme-muted">
+            {total} {total === 1 ? "глас" : "гласови"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

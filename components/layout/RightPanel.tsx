@@ -2,13 +2,15 @@
 
 import ZborcheCard from "../zborche/ZborcheCard";
 import KvizcheCard from "../kvizche/KvizcheCard";
+import MoviePoll from "../kino/MoviePoll";
 import EventSpotlight from "../ui/EventSpotlight";
 import PublicSponsorPanel from "../ui/PublicSponsorPanel";
 import MobileAppPanel from "../app/MobileAppPanel";
 
 /**
  * Default right panel for routes without a custom one (home, issues, heroes,
- * communities): the ЗборЧе and КвизЧе daily-game teasers, the featured/next city event,
+ * communities): the ЗборЧе and КвизЧе daily-game teasers, the live Кино анкета, the
+ * featured/next city event,
  * then the real sponsors panel (current partners + apply button).
  */
 export default function RightPanel() {
@@ -17,6 +19,8 @@ export default function RightPanel() {
       <MobileAppPanel />
       <ZborcheCard />
       <KvizcheCard />
+      {/* Votable right here; renders nothing when no poll is live. */}
+      <MoviePoll compact />
       <EventSpotlight />
       <PublicSponsorPanel />
 

@@ -20,6 +20,7 @@ import {
   faBus,
   faSquareParking,
   faCalendarDays,
+  faFilm,
   faChildren,
   faRecycle,
   faBell,
@@ -348,6 +349,12 @@ export default function LeftNav() {
               <FontAwesomeIcon icon={faCalendarDays} className="h-4 w-4" />
             }
             iconTone="cyan"
+          />
+          <LeftNavItem
+            href="/kino"
+            label="Кино анкета"
+            iconNode={<FontAwesomeIcon icon={faFilm} className="h-4 w-4" />}
+            iconTone="violet"
           />
           <LeftNavItem
             href="/recycle"
