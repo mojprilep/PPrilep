@@ -1,5 +1,5 @@
 /**
- * Еко угостители — venues that sort glass / cans with ПАКОМАК, entered by
+ * Еко угостители — venues that sort glass with ПАКОМАК, entered by
  * the admin from ПАКОМАК's data (see supabase/add_green_venues.sql).
  */
 

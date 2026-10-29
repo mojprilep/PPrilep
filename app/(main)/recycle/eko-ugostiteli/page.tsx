@@ -16,11 +16,11 @@ export const revalidate = 86400;
 export const metadata: Metadata = {
   title: "Еко угостители — кафулиња и ресторани што рециклираат",
   description:
-    "Кафулиња, ресторани, барови и хотели во Прилеп што го селектираат стаклото и лименките со Пакомак. Поддржи ги еко угостителите.",
+    "Кафулиња, ресторани и хотели во Прилеп што го селектираат стаклото со Пакомак. Поддржи ги еко угостителите.",
   alternates: { canonical: "/recycle/eko-ugostiteli" },
   openGraph: {
     title: "Еко угостители во Прилеп",
-    description: "Објекти што го селектираат стаклото и лименките со Пакомак — поддржи ги.",
+    description: "Објекти што го селектираат стаклото со Пакомак — поддржи ги.",
     url: "/recycle/eko-ugostiteli",
     type: "article",
   },
@@ -48,8 +48,7 @@ export default async function GreenVenuesPage() {
       <header className="space-y-1">
         <h1 className="text-xl font-semibold text-theme-heading">🌿 Еко угостители</h1>
         <p className="text-sm text-theme-muted">
-          Кафулиња, ресторани, барови и хотели во Прилеп што го селектираат стаклото и лименките
-          со <strong>Пакомак</strong> наместо да завршат на депонија. Поддржи ги — испиј го
+          Кафулиња, ресторани и хотели во Прилеп што го селектираат стаклото со <strong>Пакомак</strong> наместо да заврши на депонија. Поддржи ги — испиј го
           следното кафе кај нив.
         </p>
       </header>
@@ -76,7 +75,7 @@ export default async function GreenVenuesPage() {
       <section className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50 p-5">
         <h2 className="text-sm font-semibold text-teal-900">Вашиот објект сака да селектира?</h2>
         <p className="text-sm leading-relaxed text-teal-900/80">
-          Договорот за селектирање и подигање на стаклото и лименките се склучува директно со
+          Договорот за селектирање и подигање на стаклото се склучува директно со
           Пакомак. Јавете им се — откако ќе почнете, објектот се појавува на оваа листа.
         </p>
         <div className="flex flex-wrap gap-2">
