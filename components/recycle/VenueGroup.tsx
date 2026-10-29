@@ -28,7 +28,8 @@ function VenueCard({ v }: { v: PublicGreenVenue }) {
           <Globe size={16} />
         </a>
       )}
-      {v.phone && (
+      {/* Always shown so every row lines up; greyed out until the admin adds a number. */}
+      {v.phone ? (
         <a
           href={`tel:${v.phone}`}
           aria-label={`Јави се: ${v.phone}`}
@@ -36,6 +37,13 @@ function VenueCard({ v }: { v: PublicGreenVenue }) {
           className={`${CIRCLE} border border-teal-300 text-teal-700 hover:bg-teal-50`}>
           <Phone size={16} />
         </a>
+      ) : (
+        <span
+          aria-disabled="true"
+          title="Нема внесен телефон"
+          className={`${CIRCLE} cursor-not-allowed border border-zinc-200 text-zinc-300`}>
+          <Phone size={16} />
+        </span>
       )}
       {/* Without coordinates the maps link searches by name, so it always works. */}
       <a
