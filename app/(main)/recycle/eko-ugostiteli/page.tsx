@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { ExternalLink, Globe, MapPin, Phone } from "lucide-react";
+import { ExternalLink, Phone } from "lucide-react";
 import { createPublicClient } from "../../../../lib/supabase/public";
 import {
   PAKOMAK_CONTACT,
   PUBLIC_GREEN_VENUE_COLUMNS,
   VENUE_KIND_PLURALS,
-  venueMapsUrl,
-  websiteUrl,
   type GreenVenueKind,
   type PublicGreenVenue,
 } from "../../../../lib/recycle";
+import VenueGroup from "../../../../components/recycle/VenueGroup";
 
 // Admin edits revalidate this path on demand; the timer is only a fallback.
 export const revalidate = 86400;
@@ -36,55 +35,6 @@ async function loadVenues(): Promise<PublicGreenVenue[]> {
     .order("name");
   if (error) console.error("[recycle/eko-ugostiteli]", error.message);
   return (data ?? []) as PublicGreenVenue[];
-}
-
-function VenueCard({ v }: { v: PublicGreenVenue }) {
-  const since = v.partner_since ? new Date(`${v.partner_since}T12:00:00`).getFullYear() : null;
-  return (
-    <li className="space-y-2 rounded-2xl border border-zinc-200 bg-white p-4">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-zinc-900">{v.name}</p>
-        <div className="flex shrink-0 gap-1">
-          {v.glass && (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
-              🍾 стакло
-            </span>
-          )}
-          {v.cans && (
-            <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-800">
-              🥫 лименки
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-        {(v.address || (v.lat != null && v.lng != null)) && (
-          <a
-            href={venueMapsUrl(v)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-            <MapPin size={11} /> {v.address || "Види на мапа"}
-          </a>
-        )}
-        {v.phone && (
-          <a href={`tel:${v.phone}`} className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-            <Phone size={11} /> {v.phone}
-          </a>
-        )}
-        {v.website && (
-          <a
-            href={websiteUrl(v.website)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-teal-700 hover:underline">
-            <Globe size={11} /> веб / мрежи
-          </a>
-        )}
-      </div>
-      {since && <p className="text-[11px] text-zinc-500">Селектира со Пакомак од {since}</p>}
-    </li>
-  );
 }
 
 export default async function GreenVenuesPage() {
@@ -116,18 +66,11 @@ export default async function GreenVenuesPage() {
           Листата наскоро ќе биде објавена.
         </p>
       ) : (
-        groups.map((g) => (
-          <section key={g.kind} className="space-y-2">
-            <h2 className="text-sm font-semibold text-zinc-800">
-              {VENUE_KIND_PLURALS[g.kind]} <span className="font-normal text-zinc-500">({g.list.length})</span>
-            </h2>
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {g.list.map((v) => (
-                <VenueCard key={v.id} v={v} />
-              ))}
-            </ul>
-          </section>
-        ))
+        <div className="space-y-2">
+          {groups.map((g) => (
+            <VenueGroup key={g.kind} title={VENUE_KIND_PLURALS[g.kind]} venues={g.list} />
+          ))}
+        </div>
       )}
 
       <section className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50 p-5">

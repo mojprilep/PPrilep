@@ -65,7 +65,7 @@ export const PAKOMAK_CONTACT = {
 };
 
 export function venueMapsUrl(v: Pick<PublicGreenVenue, "lat" | "lng" | "address" | "name">): string {
-  const q = v.lat != null && v.lng != null ? `${v.lat},${v.lng}` : `${v.name}, ${v.address ?? ""} Прилеп`;
+  const q = v.lat != null && v.lng != null ? `${v.lat},${v.lng}` : [v.name, v.address, "Прилеп"].filter(Boolean).join(", ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
 
