@@ -153,7 +153,7 @@ export default function RecycleAdmin({ initialVenues }: { initialVenues: GreenVe
   }
 
   async function remove(v: GreenVenue) {
-    if (!confirm(`Избриши „${v.name}“ од листата? (За привремено скривање користи „јавно“.)`)) return;
+    if (!confirm(`Избриши „${v.name}“ од листата? (Ако само не собира, смени го статусот — објектот се крие, но останува тука.)`)) return;
     const { error } = await deleteGreenVenue(v.id);
     if (error) return toast.error(error);
     setVenues((list) => list.filter((x) => x.id !== v.id));
@@ -162,7 +162,7 @@ export default function RecycleAdmin({ initialVenues }: { initialVenues: GreenVe
   return (
     <div className="space-y-3">
       <p className="text-xs text-zinc-500">
-        {activeCount} јавни од {venues.length} ·{" "}
+        {activeCount} собираат (јавни) од {venues.length} · тие што не собираат се скриени од јавната листа ·{" "}
         <a href="/recycle/eko-ugostiteli" target="_blank" rel="noopener noreferrer" className="text-teal-700 hover:underline">
           види ја јавната страница
         </a>
@@ -236,10 +236,18 @@ export default function RecycleAdmin({ initialVenues }: { initialVenues: GreenVe
               <IconBtn title="Избриши" onClick={() => remove(v)}>
                 <Trash2 size={15} />
               </IconBtn>
-              <label className="ml-1 flex cursor-pointer items-center gap-1 text-[11px] text-zinc-500">
-                <input type="checkbox" checked={v.active} onChange={() => toggleActive(v)} />
-                јавно
-              </label>
+              {/* Not collecting = hidden from the public list (web + app), kept here. */}
+              <button
+                type="button"
+                onClick={() => toggleActive(v)}
+                title={v.active ? "Означи дека не собира (се крие од листата)" : "Означи дека собира (се прикажува)"}
+                className={`ml-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                  v.active
+                    ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"
+                }`}>
+                {v.active ? "Собира" : "Не собира · скриен"}
+              </button>
             </div>
           </li>
         ))}
