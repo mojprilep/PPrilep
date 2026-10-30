@@ -5,7 +5,6 @@ import {
   PAKOMAK_CONTACT,
   PUBLIC_GREEN_VENUE_COLUMNS,
   VENUE_KIND_PLURALS,
-  venueCollects,
   type GreenVenueKind,
   type PublicGreenVenue,
 } from "../../../../lib/recycle";
@@ -43,7 +42,6 @@ export default async function GreenVenuesPage() {
   const groups = KIND_ORDER.map((k) => ({ kind: k, list: venues.filter((v) => v.kind === k) })).filter(
     (g) => g.list.length > 0,
   );
-  const collecting = venues.filter(venueCollects).length;
 
   return (
     <div className="space-y-6">
@@ -55,17 +53,10 @@ export default async function GreenVenuesPage() {
         </p>
       </header>
 
-      {collecting > 0 && (
+      {venues.length > 0 && (
         <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-          <strong className="text-lg">{collecting}</strong>{" "}
-          {collecting === 1 ? "објект селектира" : "објекти селектираат"} отпад во Прилеп.
-        </p>
-      )}
-
-      {collecting < venues.length && (
-        <p className="flex items-center gap-2 text-xs text-theme-muted">
-          <span className="inline-block h-3 w-3 shrink-0 rounded border border-zinc-300 bg-zinc-200" />
-          Објектите означени со сиво се на листата на Пакомак, но моментално не го селектираат отпадот.
+          <strong className="text-lg">{venues.length}</strong>{" "}
+          {venues.length === 1 ? "објект селектира" : "објекти селектираат"} отпад во Прилеп.
         </p>
       )}
 

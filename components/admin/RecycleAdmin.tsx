@@ -221,7 +221,6 @@ export default function RecycleAdmin({ initialVenues }: { initialVenues: GreenVe
                 {v.name}{" "}
                 <span className="text-xs font-normal text-zinc-500">
                   · {VENUE_KIND_LABELS[v.kind]} {v.glass && "· 🍾"} {v.cans && "· 🥫"}
-                  {!v.glass && !v.cans && "· не селектира (сиво)"}
                 </span>
               </p>
               <p className="truncate text-xs text-zinc-500">
@@ -337,7 +336,6 @@ function VenueForm({
             />
             🥫 лименки
           </label>
-          <span className="text-xs text-zinc-500">Без двете → сиво, „не селектира“</span>
           <label className="flex items-center gap-1.5">
             <span className="text-xs text-zinc-500">Со Пакомак од</span>
             <input type="date" value={val("partner_since")} onChange={set("partner_since")} className={`${input} w-auto`} />
