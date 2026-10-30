@@ -3,19 +3,25 @@
 import { useState } from "react";
 import { ChevronDown, Globe, MapPin, Phone } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { venueMapsUrl, websiteUrl, type PublicGreenVenue } from "../../lib/recycle";
+import { venueCollects, venueMapsUrl, websiteUrl, type PublicGreenVenue } from "../../lib/recycle";
 
 const CIRCLE =
   "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors";
 
 function VenueCard({ v }: { v: PublicGreenVenue }) {
-  const since = v.partner_since ? new Date(`${v.partner_since}T12:00:00`).getFullYear() : null;
+  const collects = venueCollects(v);
+  const since = collects && v.partner_since ? new Date(`${v.partner_since}T12:00:00`).getFullYear() : null;
   return (
-    <li className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 pl-4">
+    <li
+      className={cn(
+        "flex items-center gap-3 rounded-2xl border p-3 pl-4",
+        collects ? "border-zinc-200 bg-white" : "border-zinc-200 bg-zinc-100 opacity-60 grayscale",
+      )}>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-zinc-900">{v.name}</p>
+        <p className={cn("text-sm font-semibold", collects ? "text-zinc-900" : "text-zinc-500")}>{v.name}</p>
         {v.address && <p className="text-xs text-zinc-500">{v.address}</p>}
         {since && <p className="text-[11px] text-zinc-500">Селектира со Пакомак од {since}</p>}
+        {!collects && <p className="text-[11px] font-medium text-zinc-500">Моментално не селектира</p>}
       </div>
       {v.website && (
         <a
@@ -67,6 +73,8 @@ interface Props {
 
 export default function VenueGroup({ title, venues, defaultOpen = false }: Props) {
   const [open, setOpen] = useState(defaultOpen);
+  // Venues that don't collect go to the bottom and aren't counted.
+  const sorted = [...venues].sort((a, b) => Number(venueCollects(b)) - Number(venueCollects(a)));
   return (
     <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
       <button
@@ -76,7 +84,7 @@ export default function VenueGroup({ title, venues, defaultOpen = false }: Props
         className="flex w-full items-center gap-3 bg-white px-4 py-3.5 text-left transition-colors hover:bg-zinc-50">
         <h2 className="flex-1 text-sm font-semibold text-zinc-800">{title}</h2>
         <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
-          {venues.length}
+          {venues.filter(venueCollects).length}
         </span>
         <ChevronDown
           size={16}
@@ -85,7 +93,7 @@ export default function VenueGroup({ title, venues, defaultOpen = false }: Props
       </button>
       {open && (
         <ul className="grid gap-2 border-t border-zinc-100 p-3 sm:grid-cols-2">
-          {venues.map((v) => (
+          {sorted.map((v) => (
             <VenueCard key={v.id} v={v} />
           ))}
         </ul>

@@ -64,6 +64,14 @@ export const PAKOMAK_CONTACT = {
   form: null as string | null,
 };
 
+/**
+ * A venue on ПАКОМАК's list that sorts neither glass nor cans right now. It
+ * stays listed, greyed out, rather than vanishing (admin: untick both streams).
+ */
+export function venueCollects(v: Pick<PublicGreenVenue, "glass" | "cans">): boolean {
+  return v.glass || v.cans;
+}
+
 export function venueMapsUrl(v: Pick<PublicGreenVenue, "lat" | "lng" | "address" | "name">): string {
   const q = v.lat != null && v.lng != null ? `${v.lat},${v.lng}` : [v.name, v.address, "Прилеп"].filter(Boolean).join(", ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
