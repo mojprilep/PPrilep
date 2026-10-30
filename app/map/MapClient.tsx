@@ -11,6 +11,8 @@ import StatusPill from "../../components/ui/StatusPill";
 import StatusTimelinePopup from "../../components/ui/StatusTimelinePopup";
 import FilterSelect from "../../components/ui/FilterSelect";
 import { COOPERATIVE_MAP_OPTIONS } from "../../lib/map/cooperative";
+import { useAuth } from "../../lib/hooks/useAuth";
+import { createClient } from "../../lib/supabase/client";
 
 export type PinnedIssue = {
   id: number;
@@ -106,14 +108,43 @@ export default function MapClient({ issues }: { issues: PinnedIssue[] }) {
   const [selected, setSelected] = useState<PinnedIssue | null>(null);
   const [showStatusPopup, setShowStatusPopup] = useState(false);
   const [category, setCategory] = useState<Category | "all">("all");
+  const { user } = useAuth();
+  // "Мои пријави": the page's data is public and carries no reporter, so the
+  // signed-in user's own issue ids are fetched separately, once, on first use.
+  // The ids are tagged with their user, so signing out or switching accounts
+  // never shows someone else's pins.
+  const [mineToggle, setMine] = useState(false);
+  const [fetched, setFetched] = useState<{ uid: string; ids: Set<number> } | null>(null);
+  const mine = mineToggle && !!user;
+  const myIds = user && fetched?.uid === user.id ? fetched.ids : null;
+
+  useEffect(() => {
+    if (!mine || !user || myIds) return;
+    let alive = true;
+    createClient()
+      .from("issues")
+      .select("id")
+      .eq("reported_by", user.id)
+      .then(({ data, error }) => {
+        if (!alive) return;
+        if (error) setMine(false);
+        else setFetched({ uid: user.id, ids: new Set((data ?? []).map((r) => r.id as number)) });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [mine, user, myIds]);
 
   const allCategories = Array.from(
     new Set(issues.map((i) => i.category)),
   ) as Category[];
 
-  const visible =
-    category === "all" ? issues : issues.filter((i) => i.category === category);
-  const hasActiveFilters = category !== "all";
+  const visible = issues.filter(
+    (i) =>
+      (category === "all" || i.category === category) &&
+      (!mine || (myIds?.has(i.id) ?? false)),
+  );
+  const hasActiveFilters = category !== "all" || mine;
 
   // Init map once
   useEffect(() => {
@@ -166,7 +197,7 @@ export default function MapClient({ issues }: { issues: PinnedIssue[] }) {
       markersRef.current.push(marker);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [issues, category]);
+  }, [issues, category, mine, myIds]);
 
   return (
     <div className="flex flex-col gap-3 px-4 py-4 2xl:px-0">
@@ -190,10 +221,26 @@ export default function MapClient({ issues }: { issues: PinnedIssue[] }) {
             ]}
           />
         </div>
+        {user && (
+          <button
+            type="button"
+            onClick={() => setMine((v) => !v)}
+            aria-pressed={mine}
+            className={`shrink-0 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
+              mine
+                ? "border-teal-600 bg-teal-600 text-white"
+                : "border-theme bg-theme-surface text-theme-muted hover:text-theme-ink"
+            }`}>
+            Мои пријави
+          </button>
+        )}
         {hasActiveFilters && (
           <button
             type="button"
-            onClick={() => setCategory("all")}
+            onClick={() => {
+              setCategory("all");
+              setMine(false);
+            }}
             className="shrink-0 px-2 py-1 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-surface-muted hover:text-theme-ink">
             Ресет
           </button>
